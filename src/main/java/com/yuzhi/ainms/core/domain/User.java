@@ -40,12 +40,12 @@ public class User extends AbstractAuditingEntity<String> implements Serializable
     @Column(name = "last_name", length = 50)
     private String lastName;
 
-    @Email
-    @Size(min = 5, max = 254)
+    //@Email
+    //@Size(min = 5, max = 254)
     @Column(length = 254, unique = true)
     private String email;
 
-    @NotNull
+    //@NotNull
     @Column(nullable = false)
     private boolean activated = false;
 
@@ -56,6 +56,18 @@ public class User extends AbstractAuditingEntity<String> implements Serializable
     @Size(max = 256)
     @Column(name = "image_url", length = 256)
     private String imageUrl;
+
+    @Size(max = 50)
+    @Column(name = "phone", length = 50)
+    private String phone;
+
+    @Size(max = 50)
+    @Column(name = "province", length = 50)
+    private String province;
+
+    @Size(max = 50)
+    @Column(name = "dept", length = 50)
+    private String dept;
 
     @JsonIgnore
     @ManyToMany
@@ -157,17 +169,69 @@ public class User extends AbstractAuditingEntity<String> implements Serializable
         return getClass().hashCode();
     }
 
-    // prettier-ignore
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getDept() {
+        return dept;
+    }
+
+    public void setDept(String dept) {
+        this.dept = dept;
+    }
+
     @Override
     public String toString() {
-        return "User{" +
-            "login='" + login + '\'' +
-            ", firstName='" + firstName + '\'' +
-            ", lastName='" + lastName + '\'' +
-            ", email='" + email + '\'' +
-            ", imageUrl='" + imageUrl + '\'' +
-            ", activated='" + activated + '\'' +
-            ", langKey='" + langKey + '\'' +
-            "}";
+        return (
+            "User{" +
+            "id='" +
+            id +
+            '\'' +
+            ", login='" +
+            login +
+            '\'' +
+            ", firstName='" +
+            firstName +
+            '\'' +
+            ", lastName='" +
+            lastName +
+            '\'' +
+            ", email='" +
+            email +
+            '\'' +
+            ", activated=" +
+            activated +
+            ", langKey='" +
+            langKey +
+            '\'' +
+            ", imageUrl='" +
+            imageUrl +
+            '\'' +
+            ", phone='" +
+            phone +
+            '\'' +
+            ", province='" +
+            province +
+            '\'' +
+            ", dept='" +
+            dept +
+            '\'' +
+            ", authorities=" +
+            authorities +
+            '}'
+        );
     }
 }

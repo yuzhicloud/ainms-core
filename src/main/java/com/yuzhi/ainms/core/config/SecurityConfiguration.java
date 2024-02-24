@@ -137,7 +137,7 @@ public class SecurityConfiguration {
 
         jwtDecoder.setJwtValidator(withAudience);
         jwtDecoder.setClaimSetConverter(
-            new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("oidc"), restTemplateBuilder.build())
+            new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("cas"), restTemplateBuilder.build())
         );
 
         return jwtDecoder;
