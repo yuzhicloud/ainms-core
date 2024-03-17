@@ -1,4 +1,4 @@
-FROM hotjava/cas:7.1.0-SNAPSHOT
+FROM hotjava/cas:latest
 COPY cas.properties /etc/cas/config/
 COPY mykeystore.p12 /etc/cas/thekeystore/mykeystore.p12
 COPY keystore.jwks /etc/cas/config/keystore.jwks

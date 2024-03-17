@@ -1,0 +1,45 @@
+{
+  "annotations": {
+    "changelogDate": "20240224034055"
+  },
+  "applications": "*",
+  "entityTableName": "access_point_group",
+  "fields": [
+    {
+      "fieldName": "apgId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "AccessPointGroup",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "powerPlant",
+      "otherEntityRelationshipName": "accessPointGroup",
+      "relationshipName": "powerPlant",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityName": "accessPoint",
+      "otherEntityRelationshipName": "group",
+      "relationshipName": "accessPoint",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-many"
+    },
+    {
+      "otherEntityName": "accessController",
+      "otherEntityRelationshipName": "accessPointGroup",
+      "relationshipName": "controller",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

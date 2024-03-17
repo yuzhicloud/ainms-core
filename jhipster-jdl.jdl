@@ -1,0 +1,104 @@
+entity AccessController {
+  nedn  String,//设备DN
+  neid  Integer, //原厂的设备ID序列号
+  aliasname String,//设备在网管系统中的名称
+  nename String,//设备名称
+  necategory String,//设备分类,防火墙、交换机、路由器等等
+  netype String, //设备类型
+  nevendorname String, //设备厂商信息，厂商ID
+  neesn String,//设备序列号
+  neip String, //设备IP地址
+  nemac  String,//设备mac
+  version   String,//设备版本："AC6605-26-PWRV200R019C00"
+  //nepatchversion   String, //补丁版本
+  //nesysoid   String,//设备sysoid
+  nestate   Integer,//设备状态，1-在线，2-连线
+  //lastpolltime   String,//上次同步时间
+  createtime  String,//创建时间
+  //timezoneid   String,//设备时区
+  neiptype  Integer,   //IP地址类型，0-Ipv4,1-Ipv6
+  subnet  String,//所属子网
+  //negroupname String,//所属分组名称
+  neosversion   String,//软件版本"VRP5.17V200R019C00"
+  //necontact   String,//设备联系人
+  //neposition   String,//设备位置
+  //memo   String,//设备备注
+  //maintainunit   String,//维保单位
+  //putintoactiontime   String,//设备投入使用时间
+  //usefullife   String,//维保到期时间
+  //neruntime   String,//设备启动时间
+  //nedescribe    String,//设备描述
+  //assetManager   String,//资产管理人
+  //assetNumber  String,//资产编号
+  //assetDate  String//购买日期
+}
+
+entity AccessPoint {
+  nedn  String,//设备DN
+  neid  Integer, //原厂的设备ID序列号
+  aliasname String,//设备在网管系统中的名称
+  nename String,//设备名称
+  necategory String,//设备分类,防火墙、交换机、路由器等等
+  netype String, //设备类型
+  nevendorname String, //设备厂商信息，厂商ID
+  neesn String,//设备序列号
+  neip String, //设备IP地址
+  nemac  String,//设备mac
+  version   String,//设备版本："AC6605-26-PWRV200R019C00"
+  //nepatchversion   String, //补丁版本
+  //nesysoid   String,//设备sysoid
+  nestate   Integer,//设备状态，1-在线，2-连线
+  //lastpolltime   String,//上次同步时间
+  createtime  String,//创建时间
+  //timezoneid   String,//设备时区
+  neiptype  Integer,   //IP地址类型，0-Ipv4,1-Ipv6
+  subnet  String,//所属子网
+  //negroupname String,//所属分组名称
+  neosversion   String,//软件版本"VRP5.17V200R019C00"
+  //necontact   String,//设备联系人
+  //neposition   String,//设备位置
+  //memo   String,//设备备注
+  //maintainunit   String,//维保单位
+  //putintoactiontime   String,//设备投入使用时间
+  //usefullife   String,//维保到期时间
+  //neruntime   String,//设备启动时间
+  //nedescribe    String,//设备描述
+  //assetManager   String,//资产管理人
+  //assetNumber  String,//资产编号
+  //assetDate  String//购买日期
+}
+
+entity AccessPointGroup {
+  apgId Long,
+  name String required,
+ 
+}
+entity PowerPlant{
+    powerPlantName String
+}
+
+entity Province{
+	provinceCode Long,//省份编码
+    provinceName String
+}
+
+relationship OneToMany {
+  AccessController{accessPoint} to AccessPoint{controller},
+  AccessController{accessPointGroup} to AccessPointGroup{controller}
+}
+
+relationship ManyToMany {
+  AccessPointGroup{accessPoint} to AccessPoint{group}
+}
+
+relationship OneToOne{
+  AccessPointGroup{powerPlant} to PowerPlant{accessPointGroup}
+}
+
+relationship OneToMany{
+ 
+  Province{province} to PowerPlant{powerPlant}
+}
+// 分页和服务定义
+paginate AccessController, AccessPoint, AccessPointGroup with pagination
+service all with serviceClass

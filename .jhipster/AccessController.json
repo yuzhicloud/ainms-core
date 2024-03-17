@@ -1,0 +1,93 @@
+{
+  "annotations": {
+    "changelogDate": "20240224033855"
+  },
+  "applications": "*",
+  "entityTableName": "access_controller",
+  "fields": [
+    {
+      "fieldName": "nedn",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "neid",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "aliasname",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nename",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "necategory",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "netype",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nevendorname",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "neesn",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "neip",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nemac",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "version",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nestate",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "createtime",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "neiptype",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "subnet",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "neosversion",
+      "fieldType": "String"
+    }
+  ],
+  "name": "AccessController",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "accessPoint",
+      "otherEntityRelationshipName": "controller",
+      "relationshipName": "accessPoint",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "accessPointGroup",
+      "otherEntityRelationshipName": "controller",
+      "relationshipName": "accessPointGroup",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

@@ -38,6 +38,16 @@ public class CacheConfiguration {
         return cm -> {
             createCache(cm, com.yuzhi.ainms.core.repository.UserRepository.USERS_BY_LOGIN_CACHE);
             createCache(cm, com.yuzhi.ainms.core.repository.UserRepository.USERS_BY_EMAIL_CACHE);
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessController.class.getName());
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessController.class.getName() + ".accessPoints");
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessController.class.getName() + ".accessPointGroups");
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessPoint.class.getName());
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessPoint.class.getName() + ".groups");
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName());
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName() + ".accessPoints");
+            createCache(cm, com.yuzhi.ainms.core.domain.PowerPlant.class.getName());
+            createCache(cm, com.yuzhi.ainms.core.domain.Province.class.getName());
+            createCache(cm, com.yuzhi.ainms.core.domain.Province.class.getName() + ".provinces");
             // jhipster-needle-ehcache-add-entry
         };
     }

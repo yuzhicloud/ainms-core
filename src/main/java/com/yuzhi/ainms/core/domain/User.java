@@ -3,7 +3,6 @@ package com.yuzhi.ainms.core.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yuzhi.ainms.core.config.Constants;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

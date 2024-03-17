@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <!--
+        Added the constraints for entity AccessPointGroup.
+    -->
+    <changeSet id="20240224034055-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="power_plant_id"
+                                 baseTableName="access_point_group"
+                                 constraintName="fk_access_point_group__power_plant_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="power_plant"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="access_point_group_id"
+                                 baseTableName="rel_access_point_group__access_point"
+                                 constraintName="fk_rel_access_point_group__access_point__access_point_group_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="access_point_group"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="access_point_id"
+                                 baseTableName="rel_access_point_group__access_point"
+                                 constraintName="fk_rel_access_point_group__access_point__access_point_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="access_point"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="controller_id"
+                                 baseTableName="access_point_group"
+                                 constraintName="fk_access_point_group__controller_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="access_controller"
+                                 />
+    </changeSet>
+</databaseChangeLog>
