@@ -1,5 +1,5 @@
 FROM hotjava/cas:latest
-COPY cas.properties /etc/cas/config/
+COPY cas.yml /etc/cas/config/
 COPY mykeystore.p12 /etc/cas/thekeystore/mykeystore.p12
 COPY keystore.jwks /etc/cas/config/keystore.jwks
 COPY OIDC-1001.json /etc/cas/services/

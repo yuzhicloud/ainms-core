@@ -1,0 +1,27 @@
+server:
+  ssl:
+    enabled: 'false'
+cas:
+  server:
+    name: "http://localhost:9080"
+    prefix: ${cas.server.name}/cas
+  serviceRegistry:
+    json:
+      location: file:/etc/cas/services
+  authn:
+    accept:
+      users: "demo::demo"
+    oidc:
+      core:
+        issuer: ${cas.server.name}/cas/oidc
+      discovery:
+        scopes: openid,profile,email,phone,address,offline_access
+        claims: profile, email, address, phone
+        token-endpoint-auth-methods-supported: client_secret_basic,client_secret_post,client_secret_jwt,private_key_jwt
+      id-token:
+        max-time-to-live-in-seconds: '28800'
+    policy:
+      all:
+        enabled: "false"
+logging:
+  config: file:/etc/cas/config/log4j2.xml

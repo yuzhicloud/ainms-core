@@ -150,9 +150,8 @@ public class ProvinceResource {
     @GetMapping("/{id}")
     public ResponseEntity<Province> getProvince(@PathVariable("id") Long id) {
         log.debug("REST request to get Province : {}", id);
-        //Optional<Province> province = provinceService.findOne(id);
-        Optional<Province>  province =
-        //return ResponseUtil.wrapOrNotFound(province);
+        Optional<Province> province = provinceService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(province);
     }
 
     /**

@@ -45,7 +45,7 @@ public class SecurityConfiguration {
 
     private final JHipsterProperties jHipsterProperties;
 
-    @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
+    @Value("${spring.security.oauth2.client.provider.cas.issuer-uri}")
     private String issuerUri;
 
     public SecurityConfiguration(JHipsterProperties jHipsterProperties) {
@@ -66,6 +66,9 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authz ->
                 // prettier-ignore
                 authz
+                    .requestMatchers(mvc.pattern("/**")).permitAll()
+                    .requestMatchers(mvc.pattern("/oauth2/authorization/cas")).permitAll()
+                    .requestMatchers(mvc.pattern("/login/oauth2/code/cas")).permitAll()
                     .requestMatchers(mvc.pattern("/api/authenticate")).permitAll()
                     .requestMatchers(mvc.pattern("/api/auth-info")).permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
