@@ -14,7 +14,7 @@
 # ===================================================================
 cas:
   server:
-    address: localhost
+    address: ops.yuzhicloud.com
 
 logging:
   level:
