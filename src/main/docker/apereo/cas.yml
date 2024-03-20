@@ -1,6 +1,7 @@
 server:
   ssl:
     enabled: 'false'
+  port: 9080
 cas:
   server:
     name: "http://localhost:9080"
@@ -20,6 +21,9 @@ cas:
         token-endpoint-auth-methods-supported: client_secret_basic,client_secret_post,client_secret_jwt,private_key_jwt
       id-token:
         max-time-to-live-in-seconds: '28800'
+      jwks:
+        file-system:
+          jwks-file: "file:/etc/cas/config/keystore.jwks"
     policy:
       all:
         enabled: "false"

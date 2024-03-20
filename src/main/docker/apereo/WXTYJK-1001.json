@@ -1,0 +1,22 @@
+{
+  "@class": "org.apereo.cas.services.OidcRegisteredService",
+  "serviceId": "http://localhost:8080/login/oauth2/code/cas",
+  "name": "WXTYJK",
+  "id": 1001,
+  "clientId": "WXTYJK",
+  "clientSecret": "secret",
+  "description": "OIDC Client Application",
+  "signIdToken": true,
+  "encryptIdToken": true,
+  "dynamicRegistrationEnabled": true,
+  "scopes": ["java.util.HashSet", ["profile", "openid", "email", "offline_access"]],
+  "supportedGrantTypes": ["java.util.HashSet", ["authorization_code"]],
+  "supportedResponseTypes": ["java.util.HashSet", ["code"]],
+  "attributeReleasePolicy": {
+    "@class": "org.apereo.cas.services.ReturnAllowedAttributeReleasePolicy",
+    "allowedAttributes": [
+      "java.util.ArrayList",
+      ["username", "firstname", "lastname", "email", "phone", "province", "dept"]
+    ]
+  }
+}
