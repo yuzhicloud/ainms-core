@@ -1,16 +1,18 @@
 package com.yuzhi.ainms.core.web.rest;
 
+import static com.yuzhi.ainms.core.domain.AccessControllerAsserts.*;
+import static com.yuzhi.ainms.core.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuzhi.ainms.core.IntegrationTest;
 import com.yuzhi.ainms.core.domain.AccessController;
 import com.yuzhi.ainms.core.repository.AccessControllerRepository;
 import jakarta.persistence.EntityManager;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,6 +87,9 @@ class AccessControllerResourceIT {
     private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
     @Autowired
+    private ObjectMapper om;
+
+    @Autowired
     private AccessControllerRepository accessControllerRepository;
 
     @Autowired
@@ -157,37 +162,26 @@ class AccessControllerResourceIT {
     @Test
     @Transactional
     void createAccessController() throws Exception {
-        int databaseSizeBeforeCreate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the AccessController
-        restAccessControllerMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
-            )
-            .andExpect(status().isCreated());
+        var returnedAccessController = om.readValue(
+            restAccessControllerMockMvc
+                .perform(
+                    post(ENTITY_API_URL)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsBytes(accessController))
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            AccessController.class
+        );
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeCreate + 1);
-        AccessController testAccessController = accessControllerList.get(accessControllerList.size() - 1);
-        assertThat(testAccessController.getNedn()).isEqualTo(DEFAULT_NEDN);
-        assertThat(testAccessController.getNeid()).isEqualTo(DEFAULT_NEID);
-        assertThat(testAccessController.getAliasname()).isEqualTo(DEFAULT_ALIASNAME);
-        assertThat(testAccessController.getNename()).isEqualTo(DEFAULT_NENAME);
-        assertThat(testAccessController.getNecategory()).isEqualTo(DEFAULT_NECATEGORY);
-        assertThat(testAccessController.getNetype()).isEqualTo(DEFAULT_NETYPE);
-        assertThat(testAccessController.getNevendorname()).isEqualTo(DEFAULT_NEVENDORNAME);
-        assertThat(testAccessController.getNeesn()).isEqualTo(DEFAULT_NEESN);
-        assertThat(testAccessController.getNeip()).isEqualTo(DEFAULT_NEIP);
-        assertThat(testAccessController.getNemac()).isEqualTo(DEFAULT_NEMAC);
-        assertThat(testAccessController.getVersion()).isEqualTo(DEFAULT_VERSION);
-        assertThat(testAccessController.getNestate()).isEqualTo(DEFAULT_NESTATE);
-        assertThat(testAccessController.getCreatetime()).isEqualTo(DEFAULT_CREATETIME);
-        assertThat(testAccessController.getNeiptype()).isEqualTo(DEFAULT_NEIPTYPE);
-        assertThat(testAccessController.getSubnet()).isEqualTo(DEFAULT_SUBNET);
-        assertThat(testAccessController.getNeosversion()).isEqualTo(DEFAULT_NEOSVERSION);
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        assertAccessControllerUpdatableFieldsEquals(returnedAccessController, getPersistedAccessController(returnedAccessController));
     }
 
     @Test
@@ -196,21 +190,17 @@ class AccessControllerResourceIT {
         // Create the AccessController with an existing ID
         accessController.setId(1L);
 
-        int databaseSizeBeforeCreate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAccessControllerMockMvc
             .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessController))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeCreate);
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
     }
 
     @Test
@@ -286,7 +276,7 @@ class AccessControllerResourceIT {
         // Initialize the database
         accessControllerRepository.saveAndFlush(accessController);
 
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessController
         AccessController updatedAccessController = accessControllerRepository.findById(accessController.getId()).orElseThrow();
@@ -315,36 +305,19 @@ class AccessControllerResourceIT {
                 put(ENTITY_API_URL_ID, updatedAccessController.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedAccessController))
+                    .content(om.writeValueAsBytes(updatedAccessController))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
-        AccessController testAccessController = accessControllerList.get(accessControllerList.size() - 1);
-        assertThat(testAccessController.getNedn()).isEqualTo(UPDATED_NEDN);
-        assertThat(testAccessController.getNeid()).isEqualTo(UPDATED_NEID);
-        assertThat(testAccessController.getAliasname()).isEqualTo(UPDATED_ALIASNAME);
-        assertThat(testAccessController.getNename()).isEqualTo(UPDATED_NENAME);
-        assertThat(testAccessController.getNecategory()).isEqualTo(UPDATED_NECATEGORY);
-        assertThat(testAccessController.getNetype()).isEqualTo(UPDATED_NETYPE);
-        assertThat(testAccessController.getNevendorname()).isEqualTo(UPDATED_NEVENDORNAME);
-        assertThat(testAccessController.getNeesn()).isEqualTo(UPDATED_NEESN);
-        assertThat(testAccessController.getNeip()).isEqualTo(UPDATED_NEIP);
-        assertThat(testAccessController.getNemac()).isEqualTo(UPDATED_NEMAC);
-        assertThat(testAccessController.getVersion()).isEqualTo(UPDATED_VERSION);
-        assertThat(testAccessController.getNestate()).isEqualTo(UPDATED_NESTATE);
-        assertThat(testAccessController.getCreatetime()).isEqualTo(UPDATED_CREATETIME);
-        assertThat(testAccessController.getNeiptype()).isEqualTo(UPDATED_NEIPTYPE);
-        assertThat(testAccessController.getSubnet()).isEqualTo(UPDATED_SUBNET);
-        assertThat(testAccessController.getNeosversion()).isEqualTo(UPDATED_NEOSVERSION);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPersistedAccessControllerToMatchAllProperties(updatedAccessController);
     }
 
     @Test
     @Transactional
     void putNonExistingAccessController() throws Exception {
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessController.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -353,19 +326,18 @@ class AccessControllerResourceIT {
                 put(ENTITY_API_URL_ID, accessController.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
+                    .content(om.writeValueAsBytes(accessController))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchAccessController() throws Exception {
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessController.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -374,34 +346,29 @@ class AccessControllerResourceIT {
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
+                    .content(om.writeValueAsBytes(accessController))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamAccessController() throws Exception {
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessController.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAccessControllerMockMvc
             .perform(
-                put(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
+                put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessController))
             )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -410,7 +377,7 @@ class AccessControllerResourceIT {
         // Initialize the database
         accessControllerRepository.saveAndFlush(accessController);
 
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessController using partial update
         AccessController partialUpdatedAccessController = new AccessController();
@@ -432,30 +399,17 @@ class AccessControllerResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedAccessController.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAccessController))
+                    .content(om.writeValueAsBytes(partialUpdatedAccessController))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
-        AccessController testAccessController = accessControllerList.get(accessControllerList.size() - 1);
-        assertThat(testAccessController.getNedn()).isEqualTo(UPDATED_NEDN);
-        assertThat(testAccessController.getNeid()).isEqualTo(DEFAULT_NEID);
-        assertThat(testAccessController.getAliasname()).isEqualTo(UPDATED_ALIASNAME);
-        assertThat(testAccessController.getNename()).isEqualTo(UPDATED_NENAME);
-        assertThat(testAccessController.getNecategory()).isEqualTo(UPDATED_NECATEGORY);
-        assertThat(testAccessController.getNetype()).isEqualTo(UPDATED_NETYPE);
-        assertThat(testAccessController.getNevendorname()).isEqualTo(DEFAULT_NEVENDORNAME);
-        assertThat(testAccessController.getNeesn()).isEqualTo(DEFAULT_NEESN);
-        assertThat(testAccessController.getNeip()).isEqualTo(DEFAULT_NEIP);
-        assertThat(testAccessController.getNemac()).isEqualTo(UPDATED_NEMAC);
-        assertThat(testAccessController.getVersion()).isEqualTo(UPDATED_VERSION);
-        assertThat(testAccessController.getNestate()).isEqualTo(DEFAULT_NESTATE);
-        assertThat(testAccessController.getCreatetime()).isEqualTo(UPDATED_CREATETIME);
-        assertThat(testAccessController.getNeiptype()).isEqualTo(UPDATED_NEIPTYPE);
-        assertThat(testAccessController.getSubnet()).isEqualTo(DEFAULT_SUBNET);
-        assertThat(testAccessController.getNeosversion()).isEqualTo(DEFAULT_NEOSVERSION);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAccessControllerUpdatableFieldsEquals(
+            createUpdateProxyForBean(partialUpdatedAccessController, accessController),
+            getPersistedAccessController(accessController)
+        );
     }
 
     @Test
@@ -464,7 +418,7 @@ class AccessControllerResourceIT {
         // Initialize the database
         accessControllerRepository.saveAndFlush(accessController);
 
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessController using partial update
         AccessController partialUpdatedAccessController = new AccessController();
@@ -493,36 +447,23 @@ class AccessControllerResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedAccessController.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAccessController))
+                    .content(om.writeValueAsBytes(partialUpdatedAccessController))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
-        AccessController testAccessController = accessControllerList.get(accessControllerList.size() - 1);
-        assertThat(testAccessController.getNedn()).isEqualTo(UPDATED_NEDN);
-        assertThat(testAccessController.getNeid()).isEqualTo(UPDATED_NEID);
-        assertThat(testAccessController.getAliasname()).isEqualTo(UPDATED_ALIASNAME);
-        assertThat(testAccessController.getNename()).isEqualTo(UPDATED_NENAME);
-        assertThat(testAccessController.getNecategory()).isEqualTo(UPDATED_NECATEGORY);
-        assertThat(testAccessController.getNetype()).isEqualTo(UPDATED_NETYPE);
-        assertThat(testAccessController.getNevendorname()).isEqualTo(UPDATED_NEVENDORNAME);
-        assertThat(testAccessController.getNeesn()).isEqualTo(UPDATED_NEESN);
-        assertThat(testAccessController.getNeip()).isEqualTo(UPDATED_NEIP);
-        assertThat(testAccessController.getNemac()).isEqualTo(UPDATED_NEMAC);
-        assertThat(testAccessController.getVersion()).isEqualTo(UPDATED_VERSION);
-        assertThat(testAccessController.getNestate()).isEqualTo(UPDATED_NESTATE);
-        assertThat(testAccessController.getCreatetime()).isEqualTo(UPDATED_CREATETIME);
-        assertThat(testAccessController.getNeiptype()).isEqualTo(UPDATED_NEIPTYPE);
-        assertThat(testAccessController.getSubnet()).isEqualTo(UPDATED_SUBNET);
-        assertThat(testAccessController.getNeosversion()).isEqualTo(UPDATED_NEOSVERSION);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAccessControllerUpdatableFieldsEquals(
+            partialUpdatedAccessController,
+            getPersistedAccessController(partialUpdatedAccessController)
+        );
     }
 
     @Test
     @Transactional
     void patchNonExistingAccessController() throws Exception {
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessController.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -531,19 +472,18 @@ class AccessControllerResourceIT {
                 patch(ENTITY_API_URL_ID, accessController.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
+                    .content(om.writeValueAsBytes(accessController))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchAccessController() throws Exception {
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessController.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -552,19 +492,18 @@ class AccessControllerResourceIT {
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
+                    .content(om.writeValueAsBytes(accessController))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamAccessController() throws Exception {
-        int databaseSizeBeforeUpdate = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessController.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -573,13 +512,12 @@ class AccessControllerResourceIT {
                 patch(ENTITY_API_URL)
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessController))
+                    .content(om.writeValueAsBytes(accessController))
             )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AccessController in the database
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -588,7 +526,7 @@ class AccessControllerResourceIT {
         // Initialize the database
         accessControllerRepository.saveAndFlush(accessController);
 
-        int databaseSizeBeforeDelete = accessControllerRepository.findAll().size();
+        long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the accessController
         restAccessControllerMockMvc
@@ -596,7 +534,37 @@ class AccessControllerResourceIT {
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
-        List<AccessController> accessControllerList = accessControllerRepository.findAll();
-        assertThat(accessControllerList).hasSize(databaseSizeBeforeDelete - 1);
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    protected long getRepositoryCount() {
+        return accessControllerRepository.count();
+    }
+
+    protected void assertIncrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertDecrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertSameRepositoryCount(long countBefore) {
+        assertThat(countBefore).isEqualTo(getRepositoryCount());
+    }
+
+    protected AccessController getPersistedAccessController(AccessController accessController) {
+        return accessControllerRepository.findById(accessController.getId()).orElseThrow();
+    }
+
+    protected void assertPersistedAccessControllerToMatchAllProperties(AccessController expectedAccessController) {
+        assertAccessControllerAllPropertiesEquals(expectedAccessController, getPersistedAccessController(expectedAccessController));
+    }
+
+    protected void assertPersistedAccessControllerToMatchUpdatableProperties(AccessController expectedAccessController) {
+        assertAccessControllerAllUpdatablePropertiesEquals(
+            expectedAccessController,
+            getPersistedAccessController(expectedAccessController)
+        );
     }
 }

@@ -1,16 +1,18 @@
 package com.yuzhi.ainms.core.web.rest;
 
+import static com.yuzhi.ainms.core.domain.AccessPointAsserts.*;
+import static com.yuzhi.ainms.core.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuzhi.ainms.core.IntegrationTest;
 import com.yuzhi.ainms.core.domain.AccessPoint;
 import com.yuzhi.ainms.core.repository.AccessPointRepository;
 import jakarta.persistence.EntityManager;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,6 +87,9 @@ class AccessPointResourceIT {
     private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
     @Autowired
+    private ObjectMapper om;
+
+    @Autowired
     private AccessPointRepository accessPointRepository;
 
     @Autowired
@@ -157,37 +162,23 @@ class AccessPointResourceIT {
     @Test
     @Transactional
     void createAccessPoint() throws Exception {
-        int databaseSizeBeforeCreate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the AccessPoint
-        restAccessPointMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
-            )
-            .andExpect(status().isCreated());
+        var returnedAccessPoint = om.readValue(
+            restAccessPointMockMvc
+                .perform(
+                    post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessPoint))
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            AccessPoint.class
+        );
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeCreate + 1);
-        AccessPoint testAccessPoint = accessPointList.get(accessPointList.size() - 1);
-        assertThat(testAccessPoint.getNedn()).isEqualTo(DEFAULT_NEDN);
-        assertThat(testAccessPoint.getNeid()).isEqualTo(DEFAULT_NEID);
-        assertThat(testAccessPoint.getAliasname()).isEqualTo(DEFAULT_ALIASNAME);
-        assertThat(testAccessPoint.getNename()).isEqualTo(DEFAULT_NENAME);
-        assertThat(testAccessPoint.getNecategory()).isEqualTo(DEFAULT_NECATEGORY);
-        assertThat(testAccessPoint.getNetype()).isEqualTo(DEFAULT_NETYPE);
-        assertThat(testAccessPoint.getNevendorname()).isEqualTo(DEFAULT_NEVENDORNAME);
-        assertThat(testAccessPoint.getNeesn()).isEqualTo(DEFAULT_NEESN);
-        assertThat(testAccessPoint.getNeip()).isEqualTo(DEFAULT_NEIP);
-        assertThat(testAccessPoint.getNemac()).isEqualTo(DEFAULT_NEMAC);
-        assertThat(testAccessPoint.getVersion()).isEqualTo(DEFAULT_VERSION);
-        assertThat(testAccessPoint.getNestate()).isEqualTo(DEFAULT_NESTATE);
-        assertThat(testAccessPoint.getCreatetime()).isEqualTo(DEFAULT_CREATETIME);
-        assertThat(testAccessPoint.getNeiptype()).isEqualTo(DEFAULT_NEIPTYPE);
-        assertThat(testAccessPoint.getSubnet()).isEqualTo(DEFAULT_SUBNET);
-        assertThat(testAccessPoint.getNeosversion()).isEqualTo(DEFAULT_NEOSVERSION);
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        assertAccessPointUpdatableFieldsEquals(returnedAccessPoint, getPersistedAccessPoint(returnedAccessPoint));
     }
 
     @Test
@@ -196,21 +187,15 @@ class AccessPointResourceIT {
         // Create the AccessPoint with an existing ID
         accessPoint.setId(1L);
 
-        int databaseSizeBeforeCreate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAccessPointMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
-            )
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessPoint)))
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeCreate);
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
     }
 
     @Test
@@ -286,7 +271,7 @@ class AccessPointResourceIT {
         // Initialize the database
         accessPointRepository.saveAndFlush(accessPoint);
 
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessPoint
         AccessPoint updatedAccessPoint = accessPointRepository.findById(accessPoint.getId()).orElseThrow();
@@ -315,36 +300,19 @@ class AccessPointResourceIT {
                 put(ENTITY_API_URL_ID, updatedAccessPoint.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedAccessPoint))
+                    .content(om.writeValueAsBytes(updatedAccessPoint))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
-        AccessPoint testAccessPoint = accessPointList.get(accessPointList.size() - 1);
-        assertThat(testAccessPoint.getNedn()).isEqualTo(UPDATED_NEDN);
-        assertThat(testAccessPoint.getNeid()).isEqualTo(UPDATED_NEID);
-        assertThat(testAccessPoint.getAliasname()).isEqualTo(UPDATED_ALIASNAME);
-        assertThat(testAccessPoint.getNename()).isEqualTo(UPDATED_NENAME);
-        assertThat(testAccessPoint.getNecategory()).isEqualTo(UPDATED_NECATEGORY);
-        assertThat(testAccessPoint.getNetype()).isEqualTo(UPDATED_NETYPE);
-        assertThat(testAccessPoint.getNevendorname()).isEqualTo(UPDATED_NEVENDORNAME);
-        assertThat(testAccessPoint.getNeesn()).isEqualTo(UPDATED_NEESN);
-        assertThat(testAccessPoint.getNeip()).isEqualTo(UPDATED_NEIP);
-        assertThat(testAccessPoint.getNemac()).isEqualTo(UPDATED_NEMAC);
-        assertThat(testAccessPoint.getVersion()).isEqualTo(UPDATED_VERSION);
-        assertThat(testAccessPoint.getNestate()).isEqualTo(UPDATED_NESTATE);
-        assertThat(testAccessPoint.getCreatetime()).isEqualTo(UPDATED_CREATETIME);
-        assertThat(testAccessPoint.getNeiptype()).isEqualTo(UPDATED_NEIPTYPE);
-        assertThat(testAccessPoint.getSubnet()).isEqualTo(UPDATED_SUBNET);
-        assertThat(testAccessPoint.getNeosversion()).isEqualTo(UPDATED_NEOSVERSION);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPersistedAccessPointToMatchAllProperties(updatedAccessPoint);
     }
 
     @Test
     @Transactional
     void putNonExistingAccessPoint() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPoint.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -353,19 +321,18 @@ class AccessPointResourceIT {
                 put(ENTITY_API_URL_ID, accessPoint.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
+                    .content(om.writeValueAsBytes(accessPoint))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchAccessPoint() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPoint.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -374,34 +341,27 @@ class AccessPointResourceIT {
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
+                    .content(om.writeValueAsBytes(accessPoint))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamAccessPoint() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPoint.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAccessPointMockMvc
-            .perform(
-                put(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
-            )
+            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessPoint)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -410,7 +370,7 @@ class AccessPointResourceIT {
         // Initialize the database
         accessPointRepository.saveAndFlush(accessPoint);
 
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessPoint using partial update
         AccessPoint partialUpdatedAccessPoint = new AccessPoint();
@@ -435,30 +395,17 @@ class AccessPointResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedAccessPoint.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAccessPoint))
+                    .content(om.writeValueAsBytes(partialUpdatedAccessPoint))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
-        AccessPoint testAccessPoint = accessPointList.get(accessPointList.size() - 1);
-        assertThat(testAccessPoint.getNedn()).isEqualTo(DEFAULT_NEDN);
-        assertThat(testAccessPoint.getNeid()).isEqualTo(UPDATED_NEID);
-        assertThat(testAccessPoint.getAliasname()).isEqualTo(UPDATED_ALIASNAME);
-        assertThat(testAccessPoint.getNename()).isEqualTo(UPDATED_NENAME);
-        assertThat(testAccessPoint.getNecategory()).isEqualTo(UPDATED_NECATEGORY);
-        assertThat(testAccessPoint.getNetype()).isEqualTo(UPDATED_NETYPE);
-        assertThat(testAccessPoint.getNevendorname()).isEqualTo(UPDATED_NEVENDORNAME);
-        assertThat(testAccessPoint.getNeesn()).isEqualTo(DEFAULT_NEESN);
-        assertThat(testAccessPoint.getNeip()).isEqualTo(UPDATED_NEIP);
-        assertThat(testAccessPoint.getNemac()).isEqualTo(UPDATED_NEMAC);
-        assertThat(testAccessPoint.getVersion()).isEqualTo(UPDATED_VERSION);
-        assertThat(testAccessPoint.getNestate()).isEqualTo(DEFAULT_NESTATE);
-        assertThat(testAccessPoint.getCreatetime()).isEqualTo(DEFAULT_CREATETIME);
-        assertThat(testAccessPoint.getNeiptype()).isEqualTo(UPDATED_NEIPTYPE);
-        assertThat(testAccessPoint.getSubnet()).isEqualTo(UPDATED_SUBNET);
-        assertThat(testAccessPoint.getNeosversion()).isEqualTo(UPDATED_NEOSVERSION);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAccessPointUpdatableFieldsEquals(
+            createUpdateProxyForBean(partialUpdatedAccessPoint, accessPoint),
+            getPersistedAccessPoint(accessPoint)
+        );
     }
 
     @Test
@@ -467,7 +414,7 @@ class AccessPointResourceIT {
         // Initialize the database
         accessPointRepository.saveAndFlush(accessPoint);
 
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessPoint using partial update
         AccessPoint partialUpdatedAccessPoint = new AccessPoint();
@@ -496,36 +443,20 @@ class AccessPointResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedAccessPoint.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAccessPoint))
+                    .content(om.writeValueAsBytes(partialUpdatedAccessPoint))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
-        AccessPoint testAccessPoint = accessPointList.get(accessPointList.size() - 1);
-        assertThat(testAccessPoint.getNedn()).isEqualTo(UPDATED_NEDN);
-        assertThat(testAccessPoint.getNeid()).isEqualTo(UPDATED_NEID);
-        assertThat(testAccessPoint.getAliasname()).isEqualTo(UPDATED_ALIASNAME);
-        assertThat(testAccessPoint.getNename()).isEqualTo(UPDATED_NENAME);
-        assertThat(testAccessPoint.getNecategory()).isEqualTo(UPDATED_NECATEGORY);
-        assertThat(testAccessPoint.getNetype()).isEqualTo(UPDATED_NETYPE);
-        assertThat(testAccessPoint.getNevendorname()).isEqualTo(UPDATED_NEVENDORNAME);
-        assertThat(testAccessPoint.getNeesn()).isEqualTo(UPDATED_NEESN);
-        assertThat(testAccessPoint.getNeip()).isEqualTo(UPDATED_NEIP);
-        assertThat(testAccessPoint.getNemac()).isEqualTo(UPDATED_NEMAC);
-        assertThat(testAccessPoint.getVersion()).isEqualTo(UPDATED_VERSION);
-        assertThat(testAccessPoint.getNestate()).isEqualTo(UPDATED_NESTATE);
-        assertThat(testAccessPoint.getCreatetime()).isEqualTo(UPDATED_CREATETIME);
-        assertThat(testAccessPoint.getNeiptype()).isEqualTo(UPDATED_NEIPTYPE);
-        assertThat(testAccessPoint.getSubnet()).isEqualTo(UPDATED_SUBNET);
-        assertThat(testAccessPoint.getNeosversion()).isEqualTo(UPDATED_NEOSVERSION);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAccessPointUpdatableFieldsEquals(partialUpdatedAccessPoint, getPersistedAccessPoint(partialUpdatedAccessPoint));
     }
 
     @Test
     @Transactional
     void patchNonExistingAccessPoint() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPoint.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -534,19 +465,18 @@ class AccessPointResourceIT {
                 patch(ENTITY_API_URL_ID, accessPoint.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
+                    .content(om.writeValueAsBytes(accessPoint))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchAccessPoint() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPoint.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -555,34 +485,29 @@ class AccessPointResourceIT {
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
+                    .content(om.writeValueAsBytes(accessPoint))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamAccessPoint() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPoint.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAccessPointMockMvc
             .perform(
-                patch(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessPoint))
+                patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(accessPoint))
             )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AccessPoint in the database
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -591,7 +516,7 @@ class AccessPointResourceIT {
         // Initialize the database
         accessPointRepository.saveAndFlush(accessPoint);
 
-        int databaseSizeBeforeDelete = accessPointRepository.findAll().size();
+        long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the accessPoint
         restAccessPointMockMvc
@@ -599,7 +524,34 @@ class AccessPointResourceIT {
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
-        List<AccessPoint> accessPointList = accessPointRepository.findAll();
-        assertThat(accessPointList).hasSize(databaseSizeBeforeDelete - 1);
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    protected long getRepositoryCount() {
+        return accessPointRepository.count();
+    }
+
+    protected void assertIncrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertDecrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertSameRepositoryCount(long countBefore) {
+        assertThat(countBefore).isEqualTo(getRepositoryCount());
+    }
+
+    protected AccessPoint getPersistedAccessPoint(AccessPoint accessPoint) {
+        return accessPointRepository.findById(accessPoint.getId()).orElseThrow();
+    }
+
+    protected void assertPersistedAccessPointToMatchAllProperties(AccessPoint expectedAccessPoint) {
+        assertAccessPointAllPropertiesEquals(expectedAccessPoint, getPersistedAccessPoint(expectedAccessPoint));
+    }
+
+    protected void assertPersistedAccessPointToMatchUpdatableProperties(AccessPoint expectedAccessPoint) {
+        assertAccessPointAllUpdatablePropertiesEquals(expectedAccessPoint, getPersistedAccessPoint(expectedAccessPoint));
     }
 }

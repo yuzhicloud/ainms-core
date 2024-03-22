@@ -58,11 +58,10 @@ public class AccessPointResource {
         if (accessPoint.getId() != null) {
             throw new BadRequestAlertException("A new accessPoint cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        AccessPoint result = accessPointService.save(accessPoint);
-        return ResponseEntity
-            .created(new URI("/api/access-points/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        accessPoint = accessPointService.save(accessPoint);
+        return ResponseEntity.created(new URI("/api/access-points/" + accessPoint.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, accessPoint.getId().toString()))
+            .body(accessPoint);
     }
 
     /**
@@ -92,11 +91,10 @@ public class AccessPointResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        AccessPoint result = accessPointService.update(accessPoint);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accessPoint.getId().toString()))
-            .body(result);
+        accessPoint = accessPointService.update(accessPoint);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accessPoint.getId().toString()))
+            .body(accessPoint);
     }
 
     /**
@@ -131,7 +129,7 @@ public class AccessPointResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accessPoint.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accessPoint.getId().toString())
         );
     }
 
@@ -172,9 +170,8 @@ public class AccessPointResource {
     public ResponseEntity<Void> deleteAccessPoint(@PathVariable("id") Long id) {
         log.debug("REST request to delete AccessPoint : {}", id);
         accessPointService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
 }

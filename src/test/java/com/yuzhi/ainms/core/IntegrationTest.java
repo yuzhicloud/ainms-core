@@ -2,6 +2,7 @@ package com.yuzhi.ainms.core;
 
 import com.yuzhi.ainms.core.config.AsyncSyncConfiguration;
 import com.yuzhi.ainms.core.config.EmbeddedSQL;
+import com.yuzhi.ainms.core.config.JacksonConfiguration;
 import com.yuzhi.ainms.core.config.TestSecurityConfiguration;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,7 +16,7 @@ import org.springframework.test.annotation.DirtiesContext;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SpringBootTest(classes = { AinmsCoreApp.class, AsyncSyncConfiguration.class, TestSecurityConfiguration.class })
+@SpringBootTest(classes = { AinmsCoreApp.class, JacksonConfiguration.class, AsyncSyncConfiguration.class, TestSecurityConfiguration.class })
 @EmbeddedSQL
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public @interface IntegrationTest {

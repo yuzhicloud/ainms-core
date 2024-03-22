@@ -2,16 +2,13 @@
 name: ainmscore
 services:
   mysql:
-    image: mysql:8.2.0
+    image: mysql:8.3.0
     volumes:
       - ./config/mysql:/etc/mysql/conf.d
     #   - ~/volumes/jhipster/ainmsCore/mysql/:/var/lib/mysql/
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=ainmscore
-      - MYSQL_ROOT_PASSWORD=RootPassword123!
-      - MYSQL_USER=mysql
-      - MYSQL_PASSWORD=RootPassword123!
     # If you want to expose these ports outside your dev PC,
     # remove the "127.0.0.1:" prefix
     ports:

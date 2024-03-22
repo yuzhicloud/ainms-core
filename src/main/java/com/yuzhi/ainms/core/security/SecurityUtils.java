@@ -17,7 +17,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
  */
 public final class SecurityUtils {
 
-    public static final String CLAIMS_NAMESPACE = "https://www.yuzhicloud.com/";
+    public static final String CLAIMS_NAMESPACE = "https://www.jhipster.tech/";
 
     private SecurityUtils() {}
 

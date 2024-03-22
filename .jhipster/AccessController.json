@@ -1,9 +1,8 @@
 {
   "annotations": {
-    "changelogDate": "20240224033855"
+    "changelogDate": "20240322100638"
   },
   "applications": "*",
-  "entityTableName": "access_controller",
   "fields": [
     {
       "fieldName": "nedn",

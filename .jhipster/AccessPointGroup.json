@@ -1,9 +1,8 @@
 {
   "annotations": {
-    "changelogDate": "20240224034055"
+    "changelogDate": "20240322100640"
   },
   "applications": "*",
-  "entityTableName": "access_point_group",
   "fields": [
     {
       "fieldName": "apgId",

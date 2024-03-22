@@ -53,8 +53,7 @@ class LogoutResourceIT {
         claims.put("groups", Collections.singletonList(AuthoritiesConstants.USER));
         claims.put("sub", 123);
 
-        SecurityContextHolder
-            .getContext()
+        SecurityContextHolder.getContext()
             .setAuthentication(registerAuthenticationToken(authorizedClientService, clientRegistration, authenticationToken(claims)));
         SecurityContextHolderAwareRequestFilter authInjector = new SecurityContextHolderAwareRequestFilter();
         authInjector.afterPropertiesSet();
@@ -66,8 +65,7 @@ class LogoutResourceIT {
     void getLogoutInformation() throws Exception {
         final String ORIGIN_URL = "http://localhost:8080";
         String logoutUrl =
-            //this.registrations.findByRegistrationId("oidc")
-            this.registrations.findByRegistrationId("cas")
+            this.registrations.findByRegistrationId("oidc")
                 .getProviderDetails()
                 .getConfigurationMetadata()
                 .get("end_session_endpoint")

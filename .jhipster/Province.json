@@ -1,9 +1,8 @@
 {
   "annotations": {
-    "changelogDate": "20240224034255"
+    "changelogDate": "20240322100642"
   },
   "applications": "*",
-  "entityTableName": "province",
   "fields": [
     {
       "fieldName": "provinceCode",

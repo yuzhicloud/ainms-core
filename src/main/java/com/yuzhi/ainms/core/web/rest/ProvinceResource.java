@@ -53,11 +53,10 @@ public class ProvinceResource {
         if (province.getId() != null) {
             throw new BadRequestAlertException("A new province cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Province result = provinceService.save(province);
-        return ResponseEntity
-            .created(new URI("/api/provinces/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        province = provinceService.save(province);
+        return ResponseEntity.created(new URI("/api/provinces/" + province.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, province.getId().toString()))
+            .body(province);
     }
 
     /**
@@ -87,11 +86,10 @@ public class ProvinceResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Province result = provinceService.update(province);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, province.getId().toString()))
-            .body(result);
+        province = provinceService.update(province);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, province.getId().toString()))
+            .body(province);
     }
 
     /**
@@ -126,7 +124,7 @@ public class ProvinceResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, province.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, province.getId().toString())
         );
     }
 
@@ -164,9 +162,8 @@ public class ProvinceResource {
     public ResponseEntity<Void> deleteProvince(@PathVariable("id") Long id) {
         log.debug("REST request to delete Province : {}", id);
         provinceService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
 }

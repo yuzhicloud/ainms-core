@@ -20,7 +20,7 @@ public class LogoutResource {
     private final ClientRegistration registration;
 
     public LogoutResource(ClientRegistrationRepository registrations) {
-        this.registration = registrations.findByRegistrationId("cas");
+        this.registration = registrations.findByRegistrationId("oidc");
     }
 
     /**

@@ -1,9 +1,8 @@
 {
   "annotations": {
-    "changelogDate": "20240224034155"
+    "changelogDate": "20240322100641"
   },
   "applications": "*",
-  "entityTableName": "power_plant",
   "fields": [
     {
       "fieldName": "powerPlantName",

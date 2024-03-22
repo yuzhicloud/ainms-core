@@ -53,11 +53,10 @@ public class PowerPlantResource {
         if (powerPlant.getId() != null) {
             throw new BadRequestAlertException("A new powerPlant cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        PowerPlant result = powerPlantService.save(powerPlant);
-        return ResponseEntity
-            .created(new URI("/api/power-plants/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        powerPlant = powerPlantService.save(powerPlant);
+        return ResponseEntity.created(new URI("/api/power-plants/" + powerPlant.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, powerPlant.getId().toString()))
+            .body(powerPlant);
     }
 
     /**
@@ -87,11 +86,10 @@ public class PowerPlantResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        PowerPlant result = powerPlantService.update(powerPlant);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, powerPlant.getId().toString()))
-            .body(result);
+        powerPlant = powerPlantService.update(powerPlant);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, powerPlant.getId().toString()))
+            .body(powerPlant);
     }
 
     /**
@@ -126,7 +124,7 @@ public class PowerPlantResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, powerPlant.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, powerPlant.getId().toString())
         );
     }
 
@@ -169,9 +167,8 @@ public class PowerPlantResource {
     public ResponseEntity<Void> deletePowerPlant(@PathVariable("id") Long id) {
         log.debug("REST request to delete PowerPlant : {}", id);
         powerPlantService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
 }

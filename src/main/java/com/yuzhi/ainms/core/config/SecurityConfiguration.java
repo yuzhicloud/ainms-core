@@ -31,7 +31,6 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -46,7 +45,7 @@ public class SecurityConfiguration {
 
     private final JHipsterProperties jHipsterProperties;
 
-    @Value("${spring.security.oauth2.client.provider.cas.issuer-uri}")
+    @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
     private String issuerUri;
 
     public SecurityConfiguration(JHipsterProperties jHipsterProperties) {
@@ -61,15 +60,12 @@ public class SecurityConfiguration {
                 csrf
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     // See https://stackoverflow.com/q/74447118/65681
-                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-            )
+                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
             .addFilterAfter(new CookieCsrfFilter(), BasicAuthenticationFilter.class)
-            .authorizeHttpRequests(authz ->
-                // prettier-ignore
+            .authorizeHttpRequests(
+                authz ->
+                    // prettier-ignore
                 authz
-                    .requestMatchers(mvc.pattern("/**")).permitAll()
-                    .requestMatchers(mvc.pattern("/oauth2/authorization/cas")).permitAll()
-                    .requestMatchers(mvc.pattern("/login/oauth2/code/cas")).permitAll()
                     .requestMatchers(mvc.pattern("/api/authenticate")).permitAll()
                     .requestMatchers(mvc.pattern("/api/auth-info")).permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
@@ -81,8 +77,7 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/management/prometheus")).permitAll()
                     .requestMatchers(mvc.pattern("/management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
             )
-            .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-            .successHandler(new SimpleUrlAuthenticationSuccessHandler("http://localhost:8000/apList")))
+            .oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService())))
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
         return http.build();
@@ -142,7 +137,7 @@ public class SecurityConfiguration {
 
         jwtDecoder.setJwtValidator(withAudience);
         jwtDecoder.setClaimSetConverter(
-            new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("cas"), restTemplateBuilder.build())
+            new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("oidc"), restTemplateBuilder.build())
         );
 
         return jwtDecoder;

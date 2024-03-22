@@ -64,11 +64,10 @@ public class AccessPointGroupResource {
         if (accessPointGroup.getId() != null) {
             throw new BadRequestAlertException("A new accessPointGroup cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        AccessPointGroup result = accessPointGroupService.save(accessPointGroup);
-        return ResponseEntity
-            .created(new URI("/api/access-point-groups/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        accessPointGroup = accessPointGroupService.save(accessPointGroup);
+        return ResponseEntity.created(new URI("/api/access-point-groups/" + accessPointGroup.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, accessPointGroup.getId().toString()))
+            .body(accessPointGroup);
     }
 
     /**
@@ -98,11 +97,10 @@ public class AccessPointGroupResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        AccessPointGroup result = accessPointGroupService.update(accessPointGroup);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accessPointGroup.getId().toString()))
-            .body(result);
+        accessPointGroup = accessPointGroupService.update(accessPointGroup);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accessPointGroup.getId().toString()))
+            .body(accessPointGroup);
     }
 
     /**
@@ -137,7 +135,7 @@ public class AccessPointGroupResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accessPointGroup.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accessPointGroup.getId().toString())
         );
     }
 
@@ -187,9 +185,8 @@ public class AccessPointGroupResource {
     public ResponseEntity<Void> deleteAccessPointGroup(@PathVariable("id") Long id) {
         log.debug("REST request to delete AccessPointGroup : {}", id);
         accessPointGroupService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
 }

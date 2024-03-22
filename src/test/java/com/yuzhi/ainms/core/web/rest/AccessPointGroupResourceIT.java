@@ -1,5 +1,7 @@
 package com.yuzhi.ainms.core.web.rest;
 
+import static com.yuzhi.ainms.core.domain.AccessPointGroupAsserts.*;
+import static com.yuzhi.ainms.core.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
@@ -7,13 +9,13 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuzhi.ainms.core.IntegrationTest;
 import com.yuzhi.ainms.core.domain.AccessPointGroup;
 import com.yuzhi.ainms.core.repository.AccessPointGroupRepository;
 import com.yuzhi.ainms.core.service.AccessPointGroupService;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +52,9 @@ class AccessPointGroupResourceIT {
 
     private static Random random = new Random();
     private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+
+    @Autowired
+    private ObjectMapper om;
 
     @Autowired
     private AccessPointGroupRepository accessPointGroupRepository;
@@ -98,23 +103,26 @@ class AccessPointGroupResourceIT {
     @Test
     @Transactional
     void createAccessPointGroup() throws Exception {
-        int databaseSizeBeforeCreate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the AccessPointGroup
-        restAccessPointGroupMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
-            )
-            .andExpect(status().isCreated());
+        var returnedAccessPointGroup = om.readValue(
+            restAccessPointGroupMockMvc
+                .perform(
+                    post(ENTITY_API_URL)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsBytes(accessPointGroup))
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            AccessPointGroup.class
+        );
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeCreate + 1);
-        AccessPointGroup testAccessPointGroup = accessPointGroupList.get(accessPointGroupList.size() - 1);
-        assertThat(testAccessPointGroup.getApgId()).isEqualTo(DEFAULT_APG_ID);
-        assertThat(testAccessPointGroup.getName()).isEqualTo(DEFAULT_NAME);
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        assertAccessPointGroupUpdatableFieldsEquals(returnedAccessPointGroup, getPersistedAccessPointGroup(returnedAccessPointGroup));
     }
 
     @Test
@@ -123,27 +131,23 @@ class AccessPointGroupResourceIT {
         // Create the AccessPointGroup with an existing ID
         accessPointGroup.setId(1L);
 
-        int databaseSizeBeforeCreate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAccessPointGroupMockMvc
             .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeCreate);
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
     }
 
     @Test
     @Transactional
     void checkNameIsRequired() throws Exception {
-        int databaseSizeBeforeTest = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null
         accessPointGroup.setName(null);
 
@@ -151,15 +155,11 @@ class AccessPointGroupResourceIT {
 
         restAccessPointGroupMockMvc
             .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isBadRequest());
 
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeTest);
+        assertSameRepositoryCount(databaseSizeBeforeTest);
     }
 
     @Test
@@ -224,7 +224,7 @@ class AccessPointGroupResourceIT {
         // Initialize the database
         accessPointGroupRepository.saveAndFlush(accessPointGroup);
 
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessPointGroup
         AccessPointGroup updatedAccessPointGroup = accessPointGroupRepository.findById(accessPointGroup.getId()).orElseThrow();
@@ -237,22 +237,19 @@ class AccessPointGroupResourceIT {
                 put(ENTITY_API_URL_ID, updatedAccessPointGroup.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedAccessPointGroup))
+                    .content(om.writeValueAsBytes(updatedAccessPointGroup))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
-        AccessPointGroup testAccessPointGroup = accessPointGroupList.get(accessPointGroupList.size() - 1);
-        assertThat(testAccessPointGroup.getApgId()).isEqualTo(UPDATED_APG_ID);
-        assertThat(testAccessPointGroup.getName()).isEqualTo(UPDATED_NAME);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPersistedAccessPointGroupToMatchAllProperties(updatedAccessPointGroup);
     }
 
     @Test
     @Transactional
     void putNonExistingAccessPointGroup() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPointGroup.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -261,19 +258,18 @@ class AccessPointGroupResourceIT {
                 put(ENTITY_API_URL_ID, accessPointGroup.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                    .content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchAccessPointGroup() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPointGroup.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -282,34 +278,29 @@ class AccessPointGroupResourceIT {
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                    .content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamAccessPointGroup() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPointGroup.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAccessPointGroupMockMvc
             .perform(
-                put(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -318,7 +309,7 @@ class AccessPointGroupResourceIT {
         // Initialize the database
         accessPointGroupRepository.saveAndFlush(accessPointGroup);
 
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessPointGroup using partial update
         AccessPointGroup partialUpdatedAccessPointGroup = new AccessPointGroup();
@@ -331,16 +322,17 @@ class AccessPointGroupResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedAccessPointGroup.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAccessPointGroup))
+                    .content(om.writeValueAsBytes(partialUpdatedAccessPointGroup))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
-        AccessPointGroup testAccessPointGroup = accessPointGroupList.get(accessPointGroupList.size() - 1);
-        assertThat(testAccessPointGroup.getApgId()).isEqualTo(DEFAULT_APG_ID);
-        assertThat(testAccessPointGroup.getName()).isEqualTo(UPDATED_NAME);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAccessPointGroupUpdatableFieldsEquals(
+            createUpdateProxyForBean(partialUpdatedAccessPointGroup, accessPointGroup),
+            getPersistedAccessPointGroup(accessPointGroup)
+        );
     }
 
     @Test
@@ -349,7 +341,7 @@ class AccessPointGroupResourceIT {
         // Initialize the database
         accessPointGroupRepository.saveAndFlush(accessPointGroup);
 
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the accessPointGroup using partial update
         AccessPointGroup partialUpdatedAccessPointGroup = new AccessPointGroup();
@@ -362,22 +354,23 @@ class AccessPointGroupResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedAccessPointGroup.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedAccessPointGroup))
+                    .content(om.writeValueAsBytes(partialUpdatedAccessPointGroup))
             )
             .andExpect(status().isOk());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
-        AccessPointGroup testAccessPointGroup = accessPointGroupList.get(accessPointGroupList.size() - 1);
-        assertThat(testAccessPointGroup.getApgId()).isEqualTo(UPDATED_APG_ID);
-        assertThat(testAccessPointGroup.getName()).isEqualTo(UPDATED_NAME);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertAccessPointGroupUpdatableFieldsEquals(
+            partialUpdatedAccessPointGroup,
+            getPersistedAccessPointGroup(partialUpdatedAccessPointGroup)
+        );
     }
 
     @Test
     @Transactional
     void patchNonExistingAccessPointGroup() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPointGroup.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -386,19 +379,18 @@ class AccessPointGroupResourceIT {
                 patch(ENTITY_API_URL_ID, accessPointGroup.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                    .content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchAccessPointGroup() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPointGroup.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -407,19 +399,18 @@ class AccessPointGroupResourceIT {
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                    .content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamAccessPointGroup() throws Exception {
-        int databaseSizeBeforeUpdate = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         accessPointGroup.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -428,13 +419,12 @@ class AccessPointGroupResourceIT {
                 patch(ENTITY_API_URL)
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(accessPointGroup))
+                    .content(om.writeValueAsBytes(accessPointGroup))
             )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AccessPointGroup in the database
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -443,7 +433,7 @@ class AccessPointGroupResourceIT {
         // Initialize the database
         accessPointGroupRepository.saveAndFlush(accessPointGroup);
 
-        int databaseSizeBeforeDelete = accessPointGroupRepository.findAll().size();
+        long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the accessPointGroup
         restAccessPointGroupMockMvc
@@ -451,7 +441,37 @@ class AccessPointGroupResourceIT {
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
-        List<AccessPointGroup> accessPointGroupList = accessPointGroupRepository.findAll();
-        assertThat(accessPointGroupList).hasSize(databaseSizeBeforeDelete - 1);
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    protected long getRepositoryCount() {
+        return accessPointGroupRepository.count();
+    }
+
+    protected void assertIncrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertDecrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertSameRepositoryCount(long countBefore) {
+        assertThat(countBefore).isEqualTo(getRepositoryCount());
+    }
+
+    protected AccessPointGroup getPersistedAccessPointGroup(AccessPointGroup accessPointGroup) {
+        return accessPointGroupRepository.findById(accessPointGroup.getId()).orElseThrow();
+    }
+
+    protected void assertPersistedAccessPointGroupToMatchAllProperties(AccessPointGroup expectedAccessPointGroup) {
+        assertAccessPointGroupAllPropertiesEquals(expectedAccessPointGroup, getPersistedAccessPointGroup(expectedAccessPointGroup));
+    }
+
+    protected void assertPersistedAccessPointGroupToMatchUpdatableProperties(AccessPointGroup expectedAccessPointGroup) {
+        assertAccessPointGroupAllUpdatablePropertiesEquals(
+            expectedAccessPointGroup,
+            getPersistedAccessPointGroup(expectedAccessPointGroup)
+        );
     }
 }

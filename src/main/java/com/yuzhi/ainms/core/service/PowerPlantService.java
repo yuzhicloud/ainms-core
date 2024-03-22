@@ -86,8 +86,7 @@ public class PowerPlantService {
     @Transactional(readOnly = true)
     public List<PowerPlant> findAllWhereAccessPointGroupIsNull() {
         log.debug("Request to get all powerPlants where AccessPointGroup is null");
-        return StreamSupport
-            .stream(powerPlantRepository.findAll().spliterator(), false)
+        return StreamSupport.stream(powerPlantRepository.findAll().spliterator(), false)
             .filter(powerPlant -> powerPlant.getAccessPointGroup() == null)
             .toList();
     }

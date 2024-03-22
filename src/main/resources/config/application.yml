@@ -156,22 +156,15 @@ spring:
   security:
     oauth2:
       client:
-        registration:
-          cas:
-            client-name: WXTYJK
-            client-id: WXTYJK
-            client-secret: secret
-            authorization-grant-type: authorization_code
-            redirect-uri: http://${server.address}:8080/login/oauth2/code/cas
-            scope: openid, profile, email, offline_access
-            client-authentication-method: client_secret_basic
         provider:
-          cas:
-            issuer-uri: http://${cas.server.address}:9080/cas/oidc
-            authorization-uri: http://${cas.server.address}:9080/cas/oidc/authorize
-            token-uri: http://${cas.server.address}:9080/cas/oidc/token
-            user-info-uri: http://${cas.server.address}:9080/cas/oidc/profile
-            jwk-set-uri: http://${cas.server.address}:9080/cas/oidc/jwks
+          oidc:
+            issuer-uri: http://localhost:9080/realms/jhipster
+        registration:
+          oidc:
+            client-id: web_app
+            client-secret: web_app
+            scope: openid, profile, email, offline_access # last one for refresh tokens
+
 server:
   servlet:
     session:

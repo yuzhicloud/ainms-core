@@ -1,16 +1,18 @@
 package com.yuzhi.ainms.core.web.rest;
 
+import static com.yuzhi.ainms.core.domain.ProvinceAsserts.*;
+import static com.yuzhi.ainms.core.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuzhi.ainms.core.IntegrationTest;
 import com.yuzhi.ainms.core.domain.Province;
 import com.yuzhi.ainms.core.repository.ProvinceRepository;
 import jakarta.persistence.EntityManager;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +43,9 @@ class ProvinceResourceIT {
 
     private static Random random = new Random();
     private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+
+    @Autowired
+    private ObjectMapper om;
 
     @Autowired
     private ProvinceRepository provinceRepository;
@@ -83,23 +88,21 @@ class ProvinceResourceIT {
     @Test
     @Transactional
     void createProvince() throws Exception {
-        int databaseSizeBeforeCreate = provinceRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Province
-        restProvinceMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(province))
-            )
-            .andExpect(status().isCreated());
+        var returnedProvince = om.readValue(
+            restProvinceMockMvc
+                .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(province)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            Province.class
+        );
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeCreate + 1);
-        Province testProvince = provinceList.get(provinceList.size() - 1);
-        assertThat(testProvince.getProvinceCode()).isEqualTo(DEFAULT_PROVINCE_CODE);
-        assertThat(testProvince.getProvinceName()).isEqualTo(DEFAULT_PROVINCE_NAME);
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        assertProvinceUpdatableFieldsEquals(returnedProvince, getPersistedProvince(returnedProvince));
     }
 
     @Test
@@ -108,21 +111,15 @@ class ProvinceResourceIT {
         // Create the Province with an existing ID
         province.setId(1L);
 
-        int databaseSizeBeforeCreate = provinceRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restProvinceMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(province))
-            )
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(province)))
             .andExpect(status().isBadRequest());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeCreate);
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
     }
 
     @Test
@@ -170,7 +167,7 @@ class ProvinceResourceIT {
         // Initialize the database
         provinceRepository.saveAndFlush(province);
 
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the province
         Province updatedProvince = provinceRepository.findById(province.getId()).orElseThrow();
@@ -183,22 +180,19 @@ class ProvinceResourceIT {
                 put(ENTITY_API_URL_ID, updatedProvince.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedProvince))
+                    .content(om.writeValueAsBytes(updatedProvince))
             )
             .andExpect(status().isOk());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
-        Province testProvince = provinceList.get(provinceList.size() - 1);
-        assertThat(testProvince.getProvinceCode()).isEqualTo(UPDATED_PROVINCE_CODE);
-        assertThat(testProvince.getProvinceName()).isEqualTo(UPDATED_PROVINCE_NAME);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPersistedProvinceToMatchAllProperties(updatedProvince);
     }
 
     @Test
     @Transactional
     void putNonExistingProvince() throws Exception {
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         province.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -207,19 +201,18 @@ class ProvinceResourceIT {
                 put(ENTITY_API_URL_ID, province.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(province))
+                    .content(om.writeValueAsBytes(province))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchProvince() throws Exception {
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         province.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -228,34 +221,27 @@ class ProvinceResourceIT {
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(province))
+                    .content(om.writeValueAsBytes(province))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamProvince() throws Exception {
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         province.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restProvinceMockMvc
-            .perform(
-                put(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(province))
-            )
+            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(province)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -264,7 +250,7 @@ class ProvinceResourceIT {
         // Initialize the database
         provinceRepository.saveAndFlush(province);
 
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the province using partial update
         Province partialUpdatedProvince = new Province();
@@ -277,16 +263,14 @@ class ProvinceResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedProvince.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedProvince))
+                    .content(om.writeValueAsBytes(partialUpdatedProvince))
             )
             .andExpect(status().isOk());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
-        Province testProvince = provinceList.get(provinceList.size() - 1);
-        assertThat(testProvince.getProvinceCode()).isEqualTo(UPDATED_PROVINCE_CODE);
-        assertThat(testProvince.getProvinceName()).isEqualTo(UPDATED_PROVINCE_NAME);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertProvinceUpdatableFieldsEquals(createUpdateProxyForBean(partialUpdatedProvince, province), getPersistedProvince(province));
     }
 
     @Test
@@ -295,7 +279,7 @@ class ProvinceResourceIT {
         // Initialize the database
         provinceRepository.saveAndFlush(province);
 
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the province using partial update
         Province partialUpdatedProvince = new Province();
@@ -308,22 +292,20 @@ class ProvinceResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedProvince.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedProvince))
+                    .content(om.writeValueAsBytes(partialUpdatedProvince))
             )
             .andExpect(status().isOk());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
-        Province testProvince = provinceList.get(provinceList.size() - 1);
-        assertThat(testProvince.getProvinceCode()).isEqualTo(UPDATED_PROVINCE_CODE);
-        assertThat(testProvince.getProvinceName()).isEqualTo(UPDATED_PROVINCE_NAME);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertProvinceUpdatableFieldsEquals(partialUpdatedProvince, getPersistedProvince(partialUpdatedProvince));
     }
 
     @Test
     @Transactional
     void patchNonExistingProvince() throws Exception {
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         province.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -332,19 +314,18 @@ class ProvinceResourceIT {
                 patch(ENTITY_API_URL_ID, province.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(province))
+                    .content(om.writeValueAsBytes(province))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchProvince() throws Exception {
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         province.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -353,34 +334,27 @@ class ProvinceResourceIT {
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(province))
+                    .content(om.writeValueAsBytes(province))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamProvince() throws Exception {
-        int databaseSizeBeforeUpdate = provinceRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         province.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restProvinceMockMvc
-            .perform(
-                patch(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(province))
-            )
+            .perform(patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(province)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Province in the database
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -389,7 +363,7 @@ class ProvinceResourceIT {
         // Initialize the database
         provinceRepository.saveAndFlush(province);
 
-        int databaseSizeBeforeDelete = provinceRepository.findAll().size();
+        long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the province
         restProvinceMockMvc
@@ -397,7 +371,34 @@ class ProvinceResourceIT {
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
-        List<Province> provinceList = provinceRepository.findAll();
-        assertThat(provinceList).hasSize(databaseSizeBeforeDelete - 1);
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    protected long getRepositoryCount() {
+        return provinceRepository.count();
+    }
+
+    protected void assertIncrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertDecrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertSameRepositoryCount(long countBefore) {
+        assertThat(countBefore).isEqualTo(getRepositoryCount());
+    }
+
+    protected Province getPersistedProvince(Province province) {
+        return provinceRepository.findById(province.getId()).orElseThrow();
+    }
+
+    protected void assertPersistedProvinceToMatchAllProperties(Province expectedProvince) {
+        assertProvinceAllPropertiesEquals(expectedProvince, getPersistedProvince(expectedProvince));
+    }
+
+    protected void assertPersistedProvinceToMatchUpdatableProperties(Province expectedProvince) {
+        assertProvinceAllUpdatablePropertiesEquals(expectedProvince, getPersistedProvince(expectedProvince));
     }
 }

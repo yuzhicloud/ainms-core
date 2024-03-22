@@ -62,11 +62,10 @@ public class AccessControllerResource {
         if (accessController.getId() != null) {
             throw new BadRequestAlertException("A new accessController cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        AccessController result = accessControllerService.save(accessController);
-        return ResponseEntity
-            .created(new URI("/api/access-controllers/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+        accessController = accessControllerService.save(accessController);
+        return ResponseEntity.created(new URI("/api/access-controllers/" + accessController.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, accessController.getId().toString()))
+            .body(accessController);
     }
 
     /**
@@ -96,11 +95,10 @@ public class AccessControllerResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        AccessController result = accessControllerService.update(accessController);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accessController.getId().toString()))
-            .body(result);
+        accessController = accessControllerService.update(accessController);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accessController.getId().toString()))
+            .body(accessController);
     }
 
     /**
@@ -135,7 +133,7 @@ public class AccessControllerResource {
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, accessController.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accessController.getId().toString())
         );
     }
 
@@ -178,9 +176,8 @@ public class AccessControllerResource {
     public ResponseEntity<Void> deleteAccessController(@PathVariable("id") Long id) {
         log.debug("REST request to delete AccessController : {}", id);
         accessControllerService.delete(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
 }

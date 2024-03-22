@@ -16,6 +16,9 @@ import org.springframework.data.domain.PageImpl;
  */
 public class AccessPointGroupRepositoryWithBagRelationshipsImpl implements AccessPointGroupRepositoryWithBagRelationships {
 
+    private static final String ID_PARAMETER = "id";
+    private static final String ACCESSPOINTGROUPS_PARAMETER = "accessPointGroups";
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -44,7 +47,7 @@ public class AccessPointGroupRepositoryWithBagRelationshipsImpl implements Acces
                 "select accessPointGroup from AccessPointGroup accessPointGroup left join fetch accessPointGroup.accessPoints where accessPointGroup.id = :id",
                 AccessPointGroup.class
             )
-            .setParameter("id", result.getId())
+            .setParameter(ID_PARAMETER, result.getId())
             .getSingleResult();
     }
 
@@ -56,7 +59,7 @@ public class AccessPointGroupRepositoryWithBagRelationshipsImpl implements Acces
                 "select accessPointGroup from AccessPointGroup accessPointGroup left join fetch accessPointGroup.accessPoints where accessPointGroup in :accessPointGroups",
                 AccessPointGroup.class
             )
-            .setParameter("accessPointGroups", accessPointGroups)
+            .setParameter(ACCESSPOINTGROUPS_PARAMETER, accessPointGroups)
             .getResultList();
         Collections.sort(result, (o1, o2) -> Integer.compare(order.get(o1.getId()), order.get(o2.getId())));
         return result;

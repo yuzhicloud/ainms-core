@@ -1,16 +1,18 @@
 package com.yuzhi.ainms.core.web.rest;
 
+import static com.yuzhi.ainms.core.domain.PowerPlantAsserts.*;
+import static com.yuzhi.ainms.core.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuzhi.ainms.core.IntegrationTest;
 import com.yuzhi.ainms.core.domain.PowerPlant;
 import com.yuzhi.ainms.core.repository.PowerPlantRepository;
 import jakarta.persistence.EntityManager;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +40,9 @@ class PowerPlantResourceIT {
 
     private static Random random = new Random();
     private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
+
+    @Autowired
+    private ObjectMapper om;
 
     @Autowired
     private PowerPlantRepository powerPlantRepository;
@@ -80,22 +85,23 @@ class PowerPlantResourceIT {
     @Test
     @Transactional
     void createPowerPlant() throws Exception {
-        int databaseSizeBeforeCreate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the PowerPlant
-        restPowerPlantMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
-            )
-            .andExpect(status().isCreated());
+        var returnedPowerPlant = om.readValue(
+            restPowerPlantMockMvc
+                .perform(
+                    post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(powerPlant))
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            PowerPlant.class
+        );
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeCreate + 1);
-        PowerPlant testPowerPlant = powerPlantList.get(powerPlantList.size() - 1);
-        assertThat(testPowerPlant.getPowerPlantName()).isEqualTo(DEFAULT_POWER_PLANT_NAME);
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        assertPowerPlantUpdatableFieldsEquals(returnedPowerPlant, getPersistedPowerPlant(returnedPowerPlant));
     }
 
     @Test
@@ -104,21 +110,15 @@ class PowerPlantResourceIT {
         // Create the PowerPlant with an existing ID
         powerPlant.setId(1L);
 
-        int databaseSizeBeforeCreate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restPowerPlantMockMvc
-            .perform(
-                post(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
-            )
+            .perform(post(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(powerPlant)))
             .andExpect(status().isBadRequest());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeCreate);
+        assertSameRepositoryCount(databaseSizeBeforeCreate);
     }
 
     @Test
@@ -164,7 +164,7 @@ class PowerPlantResourceIT {
         // Initialize the database
         powerPlantRepository.saveAndFlush(powerPlant);
 
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the powerPlant
         PowerPlant updatedPowerPlant = powerPlantRepository.findById(powerPlant.getId()).orElseThrow();
@@ -177,21 +177,19 @@ class PowerPlantResourceIT {
                 put(ENTITY_API_URL_ID, updatedPowerPlant.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedPowerPlant))
+                    .content(om.writeValueAsBytes(updatedPowerPlant))
             )
             .andExpect(status().isOk());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
-        PowerPlant testPowerPlant = powerPlantList.get(powerPlantList.size() - 1);
-        assertThat(testPowerPlant.getPowerPlantName()).isEqualTo(UPDATED_POWER_PLANT_NAME);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPersistedPowerPlantToMatchAllProperties(updatedPowerPlant);
     }
 
     @Test
     @Transactional
     void putNonExistingPowerPlant() throws Exception {
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         powerPlant.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -200,19 +198,18 @@ class PowerPlantResourceIT {
                 put(ENTITY_API_URL_ID, powerPlant.getId())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
+                    .content(om.writeValueAsBytes(powerPlant))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchPowerPlant() throws Exception {
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         powerPlant.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -221,34 +218,27 @@ class PowerPlantResourceIT {
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
+                    .content(om.writeValueAsBytes(powerPlant))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamPowerPlant() throws Exception {
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         powerPlant.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPowerPlantMockMvc
-            .perform(
-                put(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
-            )
+            .perform(put(ENTITY_API_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(powerPlant)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -257,7 +247,7 @@ class PowerPlantResourceIT {
         // Initialize the database
         powerPlantRepository.saveAndFlush(powerPlant);
 
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the powerPlant using partial update
         PowerPlant partialUpdatedPowerPlant = new PowerPlant();
@@ -270,15 +260,17 @@ class PowerPlantResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedPowerPlant.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedPowerPlant))
+                    .content(om.writeValueAsBytes(partialUpdatedPowerPlant))
             )
             .andExpect(status().isOk());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
-        PowerPlant testPowerPlant = powerPlantList.get(powerPlantList.size() - 1);
-        assertThat(testPowerPlant.getPowerPlantName()).isEqualTo(UPDATED_POWER_PLANT_NAME);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPowerPlantUpdatableFieldsEquals(
+            createUpdateProxyForBean(partialUpdatedPowerPlant, powerPlant),
+            getPersistedPowerPlant(powerPlant)
+        );
     }
 
     @Test
@@ -287,7 +279,7 @@ class PowerPlantResourceIT {
         // Initialize the database
         powerPlantRepository.saveAndFlush(powerPlant);
 
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
 
         // Update the powerPlant using partial update
         PowerPlant partialUpdatedPowerPlant = new PowerPlant();
@@ -300,21 +292,20 @@ class PowerPlantResourceIT {
                 patch(ENTITY_API_URL_ID, partialUpdatedPowerPlant.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedPowerPlant))
+                    .content(om.writeValueAsBytes(partialUpdatedPowerPlant))
             )
             .andExpect(status().isOk());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
-        PowerPlant testPowerPlant = powerPlantList.get(powerPlantList.size() - 1);
-        assertThat(testPowerPlant.getPowerPlantName()).isEqualTo(UPDATED_POWER_PLANT_NAME);
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertPowerPlantUpdatableFieldsEquals(partialUpdatedPowerPlant, getPersistedPowerPlant(partialUpdatedPowerPlant));
     }
 
     @Test
     @Transactional
     void patchNonExistingPowerPlant() throws Exception {
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         powerPlant.setId(longCount.incrementAndGet());
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
@@ -323,19 +314,18 @@ class PowerPlantResourceIT {
                 patch(ENTITY_API_URL_ID, powerPlant.getId())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
+                    .content(om.writeValueAsBytes(powerPlant))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchPowerPlant() throws Exception {
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         powerPlant.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
@@ -344,34 +334,29 @@ class PowerPlantResourceIT {
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .with(csrf())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
+                    .content(om.writeValueAsBytes(powerPlant))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamPowerPlant() throws Exception {
-        int databaseSizeBeforeUpdate = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeUpdate = getRepositoryCount();
         powerPlant.setId(longCount.incrementAndGet());
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restPowerPlantMockMvc
             .perform(
-                patch(ENTITY_API_URL)
-                    .with(csrf())
-                    .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(powerPlant))
+                patch(ENTITY_API_URL).with(csrf()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(powerPlant))
             )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the PowerPlant in the database
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeUpdate);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
     }
 
     @Test
@@ -380,7 +365,7 @@ class PowerPlantResourceIT {
         // Initialize the database
         powerPlantRepository.saveAndFlush(powerPlant);
 
-        int databaseSizeBeforeDelete = powerPlantRepository.findAll().size();
+        long databaseSizeBeforeDelete = getRepositoryCount();
 
         // Delete the powerPlant
         restPowerPlantMockMvc
@@ -388,7 +373,34 @@ class PowerPlantResourceIT {
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
-        List<PowerPlant> powerPlantList = powerPlantRepository.findAll();
-        assertThat(powerPlantList).hasSize(databaseSizeBeforeDelete - 1);
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    protected long getRepositoryCount() {
+        return powerPlantRepository.count();
+    }
+
+    protected void assertIncrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertDecrementedRepositoryCount(long countBefore) {
+        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
+    }
+
+    protected void assertSameRepositoryCount(long countBefore) {
+        assertThat(countBefore).isEqualTo(getRepositoryCount());
+    }
+
+    protected PowerPlant getPersistedPowerPlant(PowerPlant powerPlant) {
+        return powerPlantRepository.findById(powerPlant.getId()).orElseThrow();
+    }
+
+    protected void assertPersistedPowerPlantToMatchAllProperties(PowerPlant expectedPowerPlant) {
+        assertPowerPlantAllPropertiesEquals(expectedPowerPlant, getPersistedPowerPlant(expectedPowerPlant));
+    }
+
+    protected void assertPersistedPowerPlantToMatchUpdatableProperties(PowerPlant expectedPowerPlant) {
+        assertPowerPlantAllUpdatablePropertiesEquals(expectedPowerPlant, getPersistedPowerPlant(expectedPowerPlant));
     }
 }
