@@ -4,6 +4,8 @@ import com.yuzhi.ainms.core.domain.PowerPlant;
 import com.yuzhi.ainms.core.repository.PowerPlantRepository;
 import java.util.List;
 import java.util.Optional;
+
+import com.yuzhi.ainms.core.repository.PowerPlantWithProvinceName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -77,6 +79,18 @@ public class PowerPlantService {
     log.debug("Request to get all PowerPlants");
     return powerPlantRepository.findAll();
   }
+
+    /**
+     * Get all the powerPlants.
+     *
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public List<PowerPlantWithProvinceName> findAllwithProvinceName() {
+        log.debug("Request to get all PowerPlants with province name");
+        return powerPlantRepository.findAllPowerPlantsWithProvinceNames();
+    }
+
 
   /**
    * Get one powerPlant by id.
