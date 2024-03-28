@@ -14,115 +14,118 @@ import java.util.Set;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Province implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id")
+  private Long id;
 
-    @Column(name = "province_code")
-    private Long provinceCode;
+  @Column(name = "province_code")
+  private Integer provinceCode;
 
-    @Column(name = "province_name")
-    private String provinceName;
+  @Column(name = "province_name")
+  private String provinceName;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "powerPlant")
-    @JsonIgnoreProperties(value = { "accessPointGroup", "powerPlant" }, allowSetters = true)
-    private Set<PowerPlant> provinces = new HashSet<>();
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "province")
+  @JsonIgnoreProperties(
+    value = { "accessPointGroups", "province" },
+    allowSetters = true
+  )
+  private Set<PowerPlant> powerPlants = new HashSet<>();
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
+  // jhipster-needle-entity-add-field - JHipster will add fields here
 
-    public Long getId() {
-        return this.id;
+  public Long getId() {
+    return this.id;
+  }
+
+  public Province id(Long id) {
+    this.setId(id);
+    return this;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Integer getProvinceCode() {
+    return this.provinceCode;
+  }
+
+  public Province provinceCode(Integer provinceCode) {
+    this.setProvinceCode(provinceCode);
+    return this;
+  }
+
+  public void setProvinceCode(Integer provinceCode) {
+    this.provinceCode = provinceCode;
+  }
+
+  public String getProvinceName() {
+    return this.provinceName;
+  }
+
+  public Province provinceName(String provinceName) {
+    this.setProvinceName(provinceName);
+    return this;
+  }
+
+  public void setProvinceName(String provinceName) {
+    this.provinceName = provinceName;
+  }
+
+  public Set<PowerPlant> getPowerPlants() {
+    return this.powerPlants;
+  }
+
+  public void setPowerPlants(Set<PowerPlant> powerPlants) {
+    if (this.powerPlants != null) {
+      this.powerPlants.forEach(i -> i.setProvince(null));
     }
-
-    public Province id(Long id) {
-        this.setId(id);
-        return this;
+    if (powerPlants != null) {
+      powerPlants.forEach(i -> i.setProvince(this));
     }
+    this.powerPlants = powerPlants;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
+  public Province powerPlants(Set<PowerPlant> powerPlants) {
+    this.setPowerPlants(powerPlants);
+    return this;
+  }
+
+  public Province addPowerPlant(PowerPlant powerPlant) {
+    this.powerPlants.add(powerPlant);
+    powerPlant.setProvince(this);
+    return this;
+  }
+
+  public Province removePowerPlant(PowerPlant powerPlant) {
+    this.powerPlants.remove(powerPlant);
+    powerPlant.setProvince(null);
+    return this;
+  }
+
+  // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-
-    public Long getProvinceCode() {
-        return this.provinceCode;
+    if (!(o instanceof Province)) {
+      return false;
     }
+    return getId() != null && getId().equals(((Province) o).getId());
+  }
 
-    public Province provinceCode(Long provinceCode) {
-        this.setProvinceCode(provinceCode);
-        return this;
-    }
+  @Override
+  public int hashCode() {
+    // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+    return getClass().hashCode();
+  }
 
-    public void setProvinceCode(Long provinceCode) {
-        this.provinceCode = provinceCode;
-    }
-
-    public String getProvinceName() {
-        return this.provinceName;
-    }
-
-    public Province provinceName(String provinceName) {
-        this.setProvinceName(provinceName);
-        return this;
-    }
-
-    public void setProvinceName(String provinceName) {
-        this.provinceName = provinceName;
-    }
-
-    public Set<PowerPlant> getProvinces() {
-        return this.provinces;
-    }
-
-    public void setProvinces(Set<PowerPlant> powerPlants) {
-        if (this.provinces != null) {
-            this.provinces.forEach(i -> i.setPowerPlant(null));
-        }
-        if (powerPlants != null) {
-            powerPlants.forEach(i -> i.setPowerPlant(this));
-        }
-        this.provinces = powerPlants;
-    }
-
-    public Province provinces(Set<PowerPlant> powerPlants) {
-        this.setProvinces(powerPlants);
-        return this;
-    }
-
-    public Province addProvince(PowerPlant powerPlant) {
-        this.provinces.add(powerPlant);
-        powerPlant.setPowerPlant(this);
-        return this;
-    }
-
-    public Province removeProvince(PowerPlant powerPlant) {
-        this.provinces.remove(powerPlant);
-        powerPlant.setPowerPlant(null);
-        return this;
-    }
-
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Province)) {
-            return false;
-        }
-        return getId() != null && getId().equals(((Province) o).getId());
-    }
-
-    @Override
-    public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
-    }
-
-    // prettier-ignore
+  // prettier-ignore
     @Override
     public String toString() {
         return "Province{" +

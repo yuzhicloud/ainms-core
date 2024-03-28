@@ -15,7 +15,13 @@
     "enableHibernateCache": false,
     "enableSwaggerCodegen": false,
     "enableTranslation": true,
-    "entities": ["AccessController", "AccessPoint", "AccessPointGroup", "PowerPlant", "Province"],
+    "entities": [
+      "AccessController",
+      "AccessPoint",
+      "AccessPointGroup",
+      "PowerPlant",
+      "Province"
+    ],
     "feignClient": null,
     "gradleEnterpriseHost": null,
     "jhiPrefix": "ainms",

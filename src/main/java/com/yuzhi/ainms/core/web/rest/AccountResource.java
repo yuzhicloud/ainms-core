@@ -39,6 +39,7 @@ public class AccountResource {
      */
     @GetMapping("/account")
     public UserVM getAccount(Principal principal) {
+        log.debug("====REST request to get the current user" + principal.toString());
         if (principal instanceof AbstractAuthenticationToken) {
             return getUserFromAuthentication((AbstractAuthenticationToken) principal);
         } else {
@@ -87,9 +88,21 @@ public class AccountResource {
             throw new IllegalArgumentException("AuthenticationToken is not OAuth2 or JWT!");
         }
 
-        return new UserVM(
-            authToken.getName(),
-            authToken.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet())
-        );
+        Set<String> authorities = authToken.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toSet());
+        if(authToken.getName().equals("admin")) {
+            authorities.add("ROLE_ADMIN");
+            authorities.add("ROLE_USER");
+        }
+
+        log.debug("===begin to create UserVM::");
+        log.debug("authToken.getName()::" + authToken.getName());
+        log.debug("authToken.getAuthorities()::" + authorities);
+        return new UserVM(authToken.getName(), authorities);
+//        return new UserVM(
+//            authToken.getName(),
+//            authToken.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet())
+//        );
     }
 }

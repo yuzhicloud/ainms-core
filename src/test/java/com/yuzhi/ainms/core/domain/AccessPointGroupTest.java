@@ -13,59 +13,77 @@ import org.junit.jupiter.api.Test;
 
 class AccessPointGroupTest {
 
-    @Test
-    void equalsVerifier() throws Exception {
-        TestUtil.equalsVerifier(AccessPointGroup.class);
-        AccessPointGroup accessPointGroup1 = getAccessPointGroupSample1();
-        AccessPointGroup accessPointGroup2 = new AccessPointGroup();
-        assertThat(accessPointGroup1).isNotEqualTo(accessPointGroup2);
+  @Test
+  void equalsVerifier() throws Exception {
+    TestUtil.equalsVerifier(AccessPointGroup.class);
+    AccessPointGroup accessPointGroup1 = getAccessPointGroupSample1();
+    AccessPointGroup accessPointGroup2 = new AccessPointGroup();
+    assertThat(accessPointGroup1).isNotEqualTo(accessPointGroup2);
 
-        accessPointGroup2.setId(accessPointGroup1.getId());
-        assertThat(accessPointGroup1).isEqualTo(accessPointGroup2);
+    accessPointGroup2.setId(accessPointGroup1.getId());
+    assertThat(accessPointGroup1).isEqualTo(accessPointGroup2);
 
-        accessPointGroup2 = getAccessPointGroupSample2();
-        assertThat(accessPointGroup1).isNotEqualTo(accessPointGroup2);
-    }
+    accessPointGroup2 = getAccessPointGroupSample2();
+    assertThat(accessPointGroup1).isNotEqualTo(accessPointGroup2);
+  }
 
-    @Test
-    void powerPlantTest() throws Exception {
-        AccessPointGroup accessPointGroup = getAccessPointGroupRandomSampleGenerator();
-        PowerPlant powerPlantBack = getPowerPlantRandomSampleGenerator();
+  @Test
+  void accessPointTest() throws Exception {
+    AccessPointGroup accessPointGroup =
+      getAccessPointGroupRandomSampleGenerator();
+    AccessPoint accessPointBack = getAccessPointRandomSampleGenerator();
 
-        accessPointGroup.setPowerPlant(powerPlantBack);
-        assertThat(accessPointGroup.getPowerPlant()).isEqualTo(powerPlantBack);
+    accessPointGroup.addAccessPoint(accessPointBack);
+    assertThat(accessPointGroup.getAccessPoints()).containsOnly(
+      accessPointBack
+    );
+    assertThat(accessPointBack.getGroup()).isEqualTo(accessPointGroup);
 
-        accessPointGroup.powerPlant(null);
-        assertThat(accessPointGroup.getPowerPlant()).isNull();
-    }
+    accessPointGroup.removeAccessPoint(accessPointBack);
+    assertThat(accessPointGroup.getAccessPoints()).doesNotContain(
+      accessPointBack
+    );
+    assertThat(accessPointBack.getGroup()).isNull();
 
-    @Test
-    void accessPointTest() throws Exception {
-        AccessPointGroup accessPointGroup = getAccessPointGroupRandomSampleGenerator();
-        AccessPoint accessPointBack = getAccessPointRandomSampleGenerator();
+    accessPointGroup.accessPoints(new HashSet<>(Set.of(accessPointBack)));
+    assertThat(accessPointGroup.getAccessPoints()).containsOnly(
+      accessPointBack
+    );
+    assertThat(accessPointBack.getGroup()).isEqualTo(accessPointGroup);
 
-        accessPointGroup.addAccessPoint(accessPointBack);
-        assertThat(accessPointGroup.getAccessPoints()).containsOnly(accessPointBack);
+    accessPointGroup.setAccessPoints(new HashSet<>());
+    assertThat(accessPointGroup.getAccessPoints()).doesNotContain(
+      accessPointBack
+    );
+    assertThat(accessPointBack.getGroup()).isNull();
+  }
 
-        accessPointGroup.removeAccessPoint(accessPointBack);
-        assertThat(accessPointGroup.getAccessPoints()).doesNotContain(accessPointBack);
+  @Test
+  void controllerTest() throws Exception {
+    AccessPointGroup accessPointGroup =
+      getAccessPointGroupRandomSampleGenerator();
+    AccessController accessControllerBack =
+      getAccessControllerRandomSampleGenerator();
 
-        accessPointGroup.accessPoints(new HashSet<>(Set.of(accessPointBack)));
-        assertThat(accessPointGroup.getAccessPoints()).containsOnly(accessPointBack);
+    accessPointGroup.setController(accessControllerBack);
+    assertThat(accessPointGroup.getController()).isEqualTo(
+      accessControllerBack
+    );
 
-        accessPointGroup.setAccessPoints(new HashSet<>());
-        assertThat(accessPointGroup.getAccessPoints()).doesNotContain(accessPointBack);
-    }
+    accessPointGroup.controller(null);
+    assertThat(accessPointGroup.getController()).isNull();
+  }
 
-    @Test
-    void controllerTest() throws Exception {
-        AccessPointGroup accessPointGroup = getAccessPointGroupRandomSampleGenerator();
-        AccessController accessControllerBack = getAccessControllerRandomSampleGenerator();
+  @Test
+  void powerPlantTest() throws Exception {
+    AccessPointGroup accessPointGroup =
+      getAccessPointGroupRandomSampleGenerator();
+    PowerPlant powerPlantBack = getPowerPlantRandomSampleGenerator();
 
-        accessPointGroup.setController(accessControllerBack);
-        assertThat(accessPointGroup.getController()).isEqualTo(accessControllerBack);
+    accessPointGroup.setPowerPlant(powerPlantBack);
+    assertThat(accessPointGroup.getPowerPlant()).isEqualTo(powerPlantBack);
 
-        accessPointGroup.controller(null);
-        assertThat(accessPointGroup.getController()).isNull();
-    }
+    accessPointGroup.powerPlant(null);
+    assertThat(accessPointGroup.getPowerPlant()).isNull();
+  }
 }

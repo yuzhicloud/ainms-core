@@ -6,7 +6,7 @@
   "fields": [
     {
       "fieldName": "provinceCode",
-      "fieldType": "Long"
+      "fieldType": "Integer"
     },
     {
       "fieldName": "provinceName",
@@ -17,8 +17,8 @@
   "relationships": [
     {
       "otherEntityName": "powerPlant",
-      "otherEntityRelationshipName": "powerPlant",
-      "relationshipName": "province",
+      "otherEntityRelationshipName": "province",
+      "relationshipName": "powerPlant",
       "relationshipSide": "left",
       "relationshipType": "one-to-many"
     }

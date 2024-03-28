@@ -12,6 +12,9 @@
 # Full reference is available at:
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
+cas:
+  server:
+    address: localhost
 
 logging:
   level:
@@ -32,7 +35,7 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:13306/ssodemo?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+    url: jdbc:mysql://localhost:13306/ainms?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
     username: root
     password: RootPassword123!
     hikari:
@@ -44,8 +47,7 @@ spring:
         prepStmtCacheSqlLimit: 2048
         useServerPrepStmts: true
   liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
+    contexts: dev,init
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:

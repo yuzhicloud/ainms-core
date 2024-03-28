@@ -73,18 +73,11 @@
   "pagination": "pagination",
   "relationships": [
     {
-      "otherEntityName": "accessController",
-      "otherEntityRelationshipName": "accessPoint",
-      "relationshipName": "controller",
-      "relationshipSide": "right",
-      "relationshipType": "many-to-one"
-    },
-    {
       "otherEntityName": "accessPointGroup",
       "otherEntityRelationshipName": "accessPoint",
       "relationshipName": "group",
       "relationshipSide": "right",
-      "relationshipType": "many-to-many"
+      "relationshipType": "many-to-one"
     }
   ],
   "searchEngine": "no",

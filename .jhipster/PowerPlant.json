@@ -15,13 +15,13 @@
       "otherEntityName": "accessPointGroup",
       "otherEntityRelationshipName": "powerPlant",
       "relationshipName": "accessPointGroup",
-      "relationshipSide": "right",
-      "relationshipType": "one-to-one"
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
     },
     {
       "otherEntityName": "province",
-      "otherEntityRelationshipName": "province",
-      "relationshipName": "powerPlant",
+      "otherEntityRelationshipName": "powerPlant",
+      "relationshipName": "province",
       "relationshipSide": "right",
       "relationshipType": "many-to-one"
     }

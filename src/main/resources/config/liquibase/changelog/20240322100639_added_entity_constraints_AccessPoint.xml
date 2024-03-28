@@ -10,11 +10,11 @@
     -->
     <changeSet id="20240322100639-2" author="jhipster">
 
-        <addForeignKeyConstraint baseColumnNames="controller_id"
+        <addForeignKeyConstraint baseColumnNames="group_id"
                                  baseTableName="access_point"
-                                 constraintName="fk_access_point__controller_id"
+                                 constraintName="fk_access_point__group_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="access_controller"
+                                 referencedTableName="access_point_group"
                                  />
     </changeSet>
 </databaseChangeLog>

@@ -11,7 +11,7 @@ cas:
       location: file:/etc/cas/services
   authn:
     accept:
-      users: "demo::demo"
+      users: "admin::admin"
     oidc:
       core:
         issuer: ${cas.server.name}/cas/oidc

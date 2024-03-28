@@ -5,10 +5,6 @@
   "applications": "*",
   "fields": [
     {
-      "fieldName": "apgId",
-      "fieldType": "Long"
-    },
-    {
       "fieldName": "name",
       "fieldType": "String",
       "fieldValidateRules": ["required"]
@@ -18,23 +14,23 @@
   "pagination": "pagination",
   "relationships": [
     {
-      "otherEntityName": "powerPlant",
-      "otherEntityRelationshipName": "accessPointGroup",
-      "relationshipName": "powerPlant",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-one"
-    },
-    {
       "otherEntityName": "accessPoint",
       "otherEntityRelationshipName": "group",
       "relationshipName": "accessPoint",
       "relationshipSide": "left",
-      "relationshipType": "many-to-many"
+      "relationshipType": "one-to-many"
     },
     {
       "otherEntityName": "accessController",
       "otherEntityRelationshipName": "accessPointGroup",
       "relationshipName": "controller",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "powerPlant",
+      "otherEntityRelationshipName": "accessPointGroup",
+      "relationshipName": "powerPlant",
       "relationshipSide": "right",
       "relationshipType": "many-to-one"
     }

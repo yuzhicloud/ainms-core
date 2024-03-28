@@ -14,7 +14,7 @@
             <column name="id" type="bigint" autoIncrement="true" startWith="1500">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="province_code" type="bigint">
+            <column name="province_code" type="integer">
                 <constraints nullable="true" />
             </column>
             <column name="province_name" type="varchar(255)">

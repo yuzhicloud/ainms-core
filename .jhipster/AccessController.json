@@ -73,13 +73,6 @@
   "pagination": "pagination",
   "relationships": [
     {
-      "otherEntityName": "accessPoint",
-      "otherEntityRelationshipName": "controller",
-      "relationshipName": "accessPoint",
-      "relationshipSide": "left",
-      "relationshipType": "one-to-many"
-    },
-    {
       "otherEntityName": "accessPointGroup",
       "otherEntityRelationshipName": "controller",
       "relationshipName": "accessPointGroup",
