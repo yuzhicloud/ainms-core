@@ -1,0 +1,61 @@
+entity AccessController {
+  nedn String,
+  neid Integer,
+  aliasname String,
+  nename String,
+  necategory String,
+  netype String,
+  nevendorname String,
+  neesn String,
+  neip String,
+  nemac String,
+  version String,
+  nestate Integer,
+  createtime String,
+  neiptype Integer,
+  subnet String,
+  neosversion String
+}
+
+entity AccessPoint {
+  nedn String,
+  neid Integer,
+  aliasname String,
+  nename String,
+  necategory String,
+  netype String,
+  nevendorname String,
+  neesn String,
+  neip String,
+  nemac String,
+  version String,
+  nestate Integer,
+  createtime String,
+  neiptype Integer,
+  subnet String,
+  neosversion String
+}
+
+entity AccessPointGroup {
+  name String required
+}
+
+entity PowerPlant {
+  powerPlantName String
+}
+
+entity Province {
+  provinceCode Integer,
+  provinceName String
+}
+
+relationship OneToMany {
+  AccessController{accessPointGroup} to AccessPointGroup{controller},
+  AccessPointGroup{accessPoint} to AccessPoint{group},
+  PowerPlant{accessPointGroup} to AccessPointGroup{powerPlant},
+  Province{powerPlant} to PowerPlant{province}
+}
+
+paginate AccessController, AccessPoint, AccessPointGroup with pagination
+service all with serviceClass
+
