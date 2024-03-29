@@ -96,6 +96,11 @@ public class AccountResource {
             authorities.add("ROLE_USER");
         }
 
+        if(authToken.getName().equals("admin")) {
+            authorities.add("ROLE_ADMIN");
+            authorities.add("ROLE_USER");
+        }
+
         log.debug("===begin to create UserVM::");
         log.debug("authToken.getName()::" + authToken.getName());
         log.debug("authToken.getAuthorities()::" + authorities);

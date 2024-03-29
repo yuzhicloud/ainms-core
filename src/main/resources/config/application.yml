@@ -174,7 +174,7 @@ spring:
             client-id: WXTYJK
             client-secret: secret
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8080/login/oauth2/code/oidc
+            redirect-uri: http://localhost:9000/login/oauth2/code/oidc
             scope: openid, profile, email, offline_access
             client-authentication-method: client_secret_basic
         provider:
