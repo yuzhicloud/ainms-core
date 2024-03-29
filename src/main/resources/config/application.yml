@@ -153,37 +153,37 @@ spring:
   output:
     ansi:
       console-available: true
-  security:
-    oauth2:
-       client:
-         provider:
-           oidc:
-             issuer-uri: http://localhost:9090/realms/jhipster
-         registration:
-           oidc:
-             client-id: web_app
-             client-secret: web_app
-             scope: openid, profile, email, offline_access # last one for refresh tokens
-
 #  security:
 #    oauth2:
-#      client:
-#        registration:
-#          oidc:
-#            client-name: WXTYJK
-#            client-id: WXTYJK
-#            client-secret: secret
-#            authorization-grant-type: authorization_code
-#            redirect-uri: http://localhost:9000/login/oauth2/code/oidc
-#            scope: openid, profile, email, offline_access
-#            client-authentication-method: client_secret_basic
-#        provider:
-#          oidc:
-#            issuer-uri: http://${cas.server.address}:9080/cas/oidc
-#            authorization-uri: http://${cas.server.address}:9080/cas/oidc/authorize
-#            token-uri: http://${cas.server.address}:9080/cas/oidc/token
-#            user-info-uri: http://${cas.server.address}:9080/cas/oidc/profile
-#            jwk-set-uri: http://${cas.server.address}:9080/cas/oidc/jwks
+#       client:
+#         provider:
+#           oidc:
+#             issuer-uri: http://localhost:9090/realms/jhipster
+#         registration:
+#           oidc:
+#             client-id: web_app
+#             client-secret: web_app
+#             scope: openid, profile, email, offline_access # last one for refresh tokens
+
+  security:
+    oauth2:
+      client:
+        registration:
+          oidc:
+            client-name: WXTYJK
+            client-id: WXTYJK
+            client-secret: secret
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8080/login/oauth2/code/oidc
+            scope: openid, profile, email, offline_access
+            client-authentication-method: client_secret_basic
+        provider:
+          oidc:
+            issuer-uri: http://${cas.server.address}:9080/cas/oidc
+            authorization-uri: http://${cas.server.address}:9080/cas/oidc/authorize
+            token-uri: http://${cas.server.address}:9080/cas/oidc/token
+            user-info-uri: http://${cas.server.address}:9080/cas/oidc/profile
+            jwk-set-uri: http://${cas.server.address}:9080/cas/oidc/jwks
 
 server:
   servlet:
