@@ -91,7 +91,7 @@ public class AccountResource {
         Set<String> authorities = authToken.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.toSet());
-        if(authToken.getName().equals("admin")) {
+        if(authToken.getName().equals("10099")) {
             authorities.add("ROLE_ADMIN");
             authorities.add("ROLE_USER");
         }
