@@ -32,9 +32,8 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     private String login;
 
     @JsonIgnore
-    @NotNull
-    @Size(min = 60, max = 60)
-    @Column(name = "password_hash", length = 60, nullable = false)
+    @Size(min = 0, max = 60)
+    @Column(name = "password_hash", length = 60)
     private String password;
 
     @Size(max = 50)
@@ -45,19 +44,18 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Column(name = "last_name", length = 50)
     private String lastName;
 
-    @Column(name = "province_code")
-    private Integer provinceCode;
+    @Column(name = "province_id")
+    private Long provinceId;
 
     @Email
-    @Size(min = 5, max = 254)
+    @Size(min = 0, max = 254)
     @Column(length = 254, unique = true)
     private String email;
 
     @NotNull
-    @Column(nullable = false)
     private boolean activated = false;
 
-    @Size(min = 2, max = 10)
+    @Size(min = 0, max = 10)
     @Column(name = "lang_key", length = 10)
     private String langKey;
 
@@ -129,12 +127,12 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
         this.lastName = lastName;
     }
 
-    public Integer getProvinceCode() {
-        return provinceCode;
+    public Long getProvinceId() {
+        return provinceId;
     }
 
-    public void setProvinceCode(Integer provinceCode) {
-        this.provinceCode = provinceCode;
+    public void setProvinceId(Long provinceCode) {
+        this.provinceId = provinceCode;
     }
 
     public String getEmail() {
@@ -226,7 +224,7 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
             ", password='" + password + '\'' +
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
-            ", provinceCode=" + provinceCode +
+            ", provinceCode=" + provinceId +
             ", email='" + email + '\'' +
             ", activated=" + activated +
             ", langKey='" + langKey + '\'' +

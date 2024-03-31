@@ -207,7 +207,7 @@ info:
 
 jhipster:
   clientApp:
-    name: 'ainmsCoreApp'
+    name: 'AiNMSCoreApp'
   # By default CORS is disabled. Uncomment to enable.
   # cors:
   #   allowed-origins: "http://localhost:8100,http://localhost:9000"

@@ -1,6 +1,5 @@
 package com.yuzhi.ainms.core.service.dto;
 
-import com.yuzhi.ainms.core.config.Constants;
 import com.yuzhi.ainms.core.domain.Authority;
 import com.yuzhi.ainms.core.domain.User;
 import jakarta.validation.constraints.*;
@@ -28,9 +27,8 @@ public class AdminUserDTO implements Serializable {
     @Size(max = 50)
     private String lastName;
 
-    private Integer provinceCode;
+    private Long provinceId;
 
-    @Email
     @Size(min = 5, max = 254)
     private String email;
 
@@ -61,7 +59,7 @@ public class AdminUserDTO implements Serializable {
         this.login = user.getLogin();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
-        this.provinceCode = user.getProvinceCode();
+        this.provinceId = user.getProvinceId();
         this.email = user.getEmail();
         this.activated = user.isActivated();
         this.imageUrl = user.getImageUrl();
@@ -105,12 +103,12 @@ public class AdminUserDTO implements Serializable {
         this.lastName = lastName;
     }
 
-    public Integer getProvinceCode() {
-        return provinceCode;
+    public Long getProvinceId() {
+        return provinceId;
     }
 
-    public void setProvinceCode(Integer provinceCode) {
-        this.provinceCode = provinceCode;
+    public void setProvinceId(Long provinceId) {
+        this.provinceId = provinceId;
     }
 
     public String getEmail() {
@@ -194,7 +192,7 @@ public class AdminUserDTO implements Serializable {
             ", login='" + login + '\'' +
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
-            ", provinceCode=" + provinceCode +
+            ", provinceCode=" + provinceId +
             ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", activated=" + activated +

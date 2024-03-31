@@ -1,6 +1,7 @@
 package com.yuzhi.ainms.core.config;
 
 import java.time.Duration;
+
 import org.ehcache.config.builders.*;
 import org.ehcache.jsr107.Eh107Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,158 +18,161 @@ import tech.jhipster.config.cache.PrefixedKeyGenerator;
 @EnableCaching
 public class CacheConfiguration {
 
-  private GitProperties gitProperties;
-  private BuildProperties buildProperties;
-  private final javax.cache.configuration.Configuration<
-    Object,
-    Object
-  > jcacheConfiguration;
+    private GitProperties gitProperties;
+    private BuildProperties buildProperties;
+    private final javax.cache.configuration.Configuration<
+        Object,
+        Object
+        > jcacheConfiguration;
 
-  public CacheConfiguration(JHipsterProperties jHipsterProperties) {
-    JHipsterProperties.Cache.Ehcache ehcache = jHipsterProperties
-      .getCache()
-      .getEhcache();
+    public CacheConfiguration(JHipsterProperties jHipsterProperties) {
+        JHipsterProperties.Cache.Ehcache ehcache = jHipsterProperties
+            .getCache()
+            .getEhcache();
 
-    jcacheConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(
-      CacheConfigurationBuilder.newCacheConfigurationBuilder(
-        Object.class,
-        Object.class,
-        ResourcePoolsBuilder.heap(ehcache.getMaxEntries())
-      )
-        .withExpiry(
-          ExpiryPolicyBuilder.timeToLiveExpiration(
-            Duration.ofSeconds(ehcache.getTimeToLiveSeconds())
-          )
-        )
-        .build()
-    );
-  }
-
-  @Bean
-  public JCacheManagerCustomizer cacheManagerCustomizer() {
-    return cm -> {
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessController.class.getName()
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessController.class.getName() +
-        ".accessPoints"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessController.class.getName() +
-        ".accessPointGroups"
-      );
-      createCache(cm, com.yuzhi.ainms.core.domain.AccessPoint.class.getName());
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessPoint.class.getName() + ".groups"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName()
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName() +
-        ".accessPoints"
-      );
-      createCache(cm, com.yuzhi.ainms.core.domain.PowerPlant.class.getName());
-      createCache(cm, com.yuzhi.ainms.core.domain.Province.class.getName());
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.Province.class.getName() + ".provinces"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.PowerPlant.class.getName() +
-        ".accessPointGroups"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.Province.class.getName() + ".powerPlants"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessController.class.getName()
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessController.class.getName() +
-        ".accessPointGroups"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName()
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName() +
-        ".accessPoints"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.PowerPlant.class.getName() +
-        ".accessPointGroups"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.Province.class.getName() + ".powerPlants"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessController.class.getName()
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessController.class.getName() +
-        ".accessPointGroups"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName()
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName() +
-        ".accessPoints"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.PowerPlant.class.getName() +
-        ".accessPointGroups"
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.Province.class.getName() + ".powerPlants"
-      );
-      // jhipster-needle-ehcache-add-entry
-    };
-  }
-
-  private void createCache(javax.cache.CacheManager cm, String cacheName) {
-    javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
-    if (cache != null) {
-      cache.clear();
-    } else {
-      cm.createCache(cacheName, jcacheConfiguration);
+        jcacheConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(
+            CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                    Object.class,
+                    Object.class,
+                    ResourcePoolsBuilder.heap(ehcache.getMaxEntries())
+                )
+                .withExpiry(
+                    ExpiryPolicyBuilder.timeToLiveExpiration(
+                        Duration.ofSeconds(ehcache.getTimeToLiveSeconds())
+                    )
+                )
+                .build()
+        );
     }
-  }
 
-  @Autowired(required = false)
-  public void setGitProperties(GitProperties gitProperties) {
-    this.gitProperties = gitProperties;
-  }
+    @Bean
+    public JCacheManagerCustomizer cacheManagerCustomizer() {
+        return cm -> {
+            createCache(cm, com.yuzhi.ainms.core.repository.UserRepository.USERS_BY_LOGIN_CACHE);
+            createCache(cm, com.yuzhi.ainms.core.repository.UserRepository.USERS_BY_EMAIL_CACHE);
+            createCache(cm, com.yuzhi.ainms.core.domain.Authority.class.getName());
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessController.class.getName()
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessController.class.getName() +
+                    ".accessPoints"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessController.class.getName() +
+                    ".accessPointGroups"
+            );
+            createCache(cm, com.yuzhi.ainms.core.domain.AccessPoint.class.getName());
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessPoint.class.getName() + ".groups"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName()
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName() +
+                    ".accessPoints"
+            );
+            createCache(cm, com.yuzhi.ainms.core.domain.PowerPlant.class.getName());
+            createCache(cm, com.yuzhi.ainms.core.domain.Province.class.getName());
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.Province.class.getName() + ".provinces"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.PowerPlant.class.getName() +
+                    ".accessPointGroups"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.Province.class.getName() + ".powerPlants"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessController.class.getName()
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessController.class.getName() +
+                    ".accessPointGroups"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName()
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName() +
+                    ".accessPoints"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.PowerPlant.class.getName() +
+                    ".accessPointGroups"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.Province.class.getName() + ".powerPlants"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessController.class.getName()
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessController.class.getName() +
+                    ".accessPointGroups"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName()
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.AccessPointGroup.class.getName() +
+                    ".accessPoints"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.PowerPlant.class.getName() +
+                    ".accessPointGroups"
+            );
+            createCache(
+                cm,
+                com.yuzhi.ainms.core.domain.Province.class.getName() + ".powerPlants"
+            );
+            // jhipster-needle-ehcache-add-entry
+        };
+    }
 
-  @Autowired(required = false)
-  public void setBuildProperties(BuildProperties buildProperties) {
-    this.buildProperties = buildProperties;
-  }
+    private void createCache(javax.cache.CacheManager cm, String cacheName) {
+        javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
+        if (cache != null) {
+            cache.clear();
+        } else {
+            cm.createCache(cacheName, jcacheConfiguration);
+        }
+    }
 
-  @Bean
-  public KeyGenerator keyGenerator() {
-    return new PrefixedKeyGenerator(this.gitProperties, this.buildProperties);
-  }
+    @Autowired(required = false)
+    public void setGitProperties(GitProperties gitProperties) {
+        this.gitProperties = gitProperties;
+    }
+
+    @Autowired(required = false)
+    public void setBuildProperties(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
+
+    @Bean
+    public KeyGenerator keyGenerator() {
+        return new PrefixedKeyGenerator(this.gitProperties, this.buildProperties);
+    }
 }

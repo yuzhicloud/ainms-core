@@ -21,24 +21,16 @@
             <column name="password_hash" type="varchar(60)"/>
             <column name="first_name" type="varchar(50)"/>
             <column name="last_name" type="varchar(50)"/>
-            <column name="province_code" type="integer"/>
-            <column name="email" type="varchar(191)">
-                <constraints unique="true" nullable="true" uniqueConstraintName="ux_user_email"/>
-            </column>
+            <column name="province_id" type="integer"/>
+            <column name="email" type="varchar(191)"/>
             <column name="image_url" type="varchar(256)"/>
-            <column name="activated" type="boolean" valueBoolean="false">
-                <constraints nullable="false" />
-            </column>
+            <column name="activated" type="boolean" valueBoolean="true"/>
             <column name="lang_key" type="varchar(10)"/>
             <column name="activation_key" type="varchar(20)"/>
             <column name="reset_key" type="varchar(20)"/>
-            <column name="created_by" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
+            <column name="created_by" type="varchar(50)"/>
             <column name="created_date" type="timestamp"/>
-            <column name="reset_date" type="timestamp">
-                <constraints nullable="true"/>
-            </column>
+            <column name="reset_date" type="timestamp"/>
             <column name="last_modified_by" type="varchar(50)"/>
             <column name="last_modified_date" type="timestamp"/>
         </createTable>
@@ -72,9 +64,9 @@
                                  referencedColumnNames="id"
                                  referencedTableName="ainms_user"/>
 
-        <addNotNullConstraint   columnName="password_hash"
-                                columnDataType="varchar(60)"
-                                tableName="ainms_user"/>
+<!--        <addNotNullConstraint   columnName="password_hash"-->
+<!--                                columnDataType="varchar(60)"-->
+<!--                                tableName="ainms_user"/>-->
         <loadData
                   file="config/liquibase/data/authority.csv"
                   separator=";"

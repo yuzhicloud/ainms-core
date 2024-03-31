@@ -3,13 +3,14 @@ package com.yuzhi.ainms.core.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.PREFERRED_USERNAME;
 
-import com.yuzhi.ainms.core.security.*;
 import com.yuzhi.ainms.core.security.SecurityUtils;
 import com.yuzhi.ainms.core.security.oauth2.AudienceValidator;
 import com.yuzhi.ainms.core.security.oauth2.CustomClaimConverter;
 import com.yuzhi.ainms.core.security.oauth2.JwtGrantedAuthorityConverter;
 import java.util.*;
 
+import com.yuzhi.ainms.core.service.UserService;
+import com.yuzhi.ainms.core.web.filter.SpaWebFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -38,6 +40,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import tech.jhipster.config.JHipsterProperties;
@@ -66,7 +69,23 @@ public class SecurityConfiguration {
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     // See https://stackoverflow.com/q/74447118/65681
                     .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+            .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
             .addFilterAfter(new CookieCsrfFilter(), BasicAuthenticationFilter.class)
+            .headers(
+                headers ->
+                    headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
+                        .frameOptions(FrameOptionsConfig::sameOrigin)
+                        .referrerPolicy(
+                            referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                        )
+                        .permissionsPolicy(
+                            permissions ->
+                                permissions.policy(
+                                    "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()"
+                                )
+                        )
+            )
             .authorizeHttpRequests(
                 authz ->
                     // prettier-ignore
@@ -76,14 +95,12 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/api/authenticate")).permitAll()
                     .requestMatchers(mvc.pattern("/api/auth-info")).permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**")).authenticated()
-                    .requestMatchers(mvc.pattern("/api/admin/user-management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).authenticated()
-                    .requestMatchers(mvc.pattern("/management/health")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/health/**")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/info")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/prometheus")).permitAll()
-                    //.requestMatchers(mvc.pattern("/management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(mvc.pattern("/management/health")).authenticated()
+                    .requestMatchers(mvc.pattern("/management/health/**")).authenticated()
+                    .requestMatchers(mvc.pattern("/management/info")).authenticated()
+                    .requestMatchers(mvc.pattern("/management/prometheus")).authenticated()
                     .requestMatchers(mvc.pattern("/management/**")).authenticated()
             )
             .oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
@@ -92,7 +109,7 @@ public class SecurityConfiguration {
                     log.error("Authentication failed: " + exception.getMessage());
                     response.sendRedirect("/?error=" + exception.getMessage()); // 自定义错误重定向
                 }))
-            // .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
         return http.build();
     }
@@ -106,6 +123,7 @@ public class SecurityConfiguration {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new JwtGrantedAuthorityConverter());
         jwtAuthenticationConverter.setPrincipalClaimName(PREFERRED_USERNAME);
+
         return jwtAuthenticationConverter;
     }
 
@@ -143,49 +161,21 @@ public class SecurityConfiguration {
         };
     }
 
-//    @Bean
-//    JwtDecoder jwtDecoder(ClientRegistrationRepository clientRegistrationRepository, RestTemplateBuilder restTemplateBuilder) {
-//        log.debug("====start jwtDecoder");
-//        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
-//
-//        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
-//        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-//        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
-//
-//        jwtDecoder.setJwtValidator(withAudience);
-//        jwtDecoder.setClaimSetConverter(
-//            new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("oidc"), restTemplateBuilder.build())
-//        );
-//
-//        return jwtDecoder;
-//    }
+    @Bean
+    JwtDecoder jwtDecoder(ClientRegistrationRepository clientRegistrationRepository, RestTemplateBuilder restTemplateBuilder) {
+        NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//            .cors(withDefaults())
-//            .csrf(csrf ->
-//                csrf
-//                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-//                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-//            .authorizeRequests(authz -> authz
-//                .requestMatchers("/").permitAll()
-//                .requestMatchers("/index.html").permitAll()
-//                .anyRequest().authenticated()
-//            )
-//            .oauth2Login(oauth2 -> oauth2
-//                .loginPage("/")
-//                .userInfoEndpoint(userInfo -> userInfo
-//                    .oidcUserService(this.oidcUserService())
-//                )
-//                .successHandler(this.oauth2LoginSuccessHandler())
-//                .failureHandler((request, response, exception) -> {
-//                    log.error("Authentication failed: " + exception.getMessage());
-//                    response.sendRedirect("/?error=" + exception.getMessage()); // 自定义错误重定向
-//                })
-//            );
-//        return http.build();
-//    }
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+
+        jwtDecoder.setJwtValidator(withAudience);
+        jwtDecoder.setClaimSetConverter(
+            new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("oidc"), restTemplateBuilder.build())
+        );
+
+        return jwtDecoder;
+    }
 
     @Bean
     public AuthenticationSuccessHandler oauth2LoginSuccessHandler() {
