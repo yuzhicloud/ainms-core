@@ -44,7 +44,7 @@ management:
           - liquibase
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: always
       roles: 'ROLE_USER'
       probes:
         enabled: true

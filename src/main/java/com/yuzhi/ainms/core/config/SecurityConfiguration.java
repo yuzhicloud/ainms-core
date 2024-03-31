@@ -8,8 +8,6 @@ import com.yuzhi.ainms.core.security.oauth2.AudienceValidator;
 import com.yuzhi.ainms.core.security.oauth2.CustomClaimConverter;
 import com.yuzhi.ainms.core.security.oauth2.JwtGrantedAuthorityConverter;
 import java.util.*;
-
-import com.yuzhi.ainms.core.service.UserService;
 import com.yuzhi.ainms.core.web.filter.SpaWebFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,7 +171,6 @@ public class SecurityConfiguration {
         jwtDecoder.setClaimSetConverter(
             new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("oidc"), restTemplateBuilder.build())
         );
-
         return jwtDecoder;
     }
 
