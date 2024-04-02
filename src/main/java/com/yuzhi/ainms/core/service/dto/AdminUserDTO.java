@@ -192,7 +192,7 @@ public class AdminUserDTO implements Serializable {
             ", login='" + login + '\'' +
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
-            ", provinceCode=" + provinceId +
+            ", provinceId=" + provinceId +
             ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", activated=" + activated +
