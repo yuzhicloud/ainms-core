@@ -2,7 +2,7 @@ package com.yuzhi.ainms.core.web.rest;
 
 import com.yuzhi.ainms.core.domain.PowerPlant;
 import com.yuzhi.ainms.core.repository.PowerPlantRepository;
-import com.yuzhi.ainms.core.repository.PowerPlantWithProvinceName;
+import com.yuzhi.ainms.core.service.dto.PowerPlantWithProvinceDTO;
 import com.yuzhi.ainms.core.service.PowerPlantService;
 import com.yuzhi.ainms.core.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -199,7 +199,7 @@ public class PowerPlantResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of powerPlants in body.
      */
     @GetMapping("/with-province-name")
-    public List<PowerPlantWithProvinceName> getAllPowerPlantsWithProvinceName() {
+    public List<PowerPlantWithProvinceDTO> getAllPowerPlantsWithProvinceName() {
         log.debug("REST request to get all PowerPlants with province name");
         return powerPlantService.findAllwithProvinceName();
     }

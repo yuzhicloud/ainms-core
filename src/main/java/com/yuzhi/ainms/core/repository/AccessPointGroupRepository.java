@@ -9,5 +9,4 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface AccessPointGroupRepository
-  extends JpaRepository<AccessPointGroup, Long> {}
+public interface AccessPointGroupRepository extends JpaRepository<AccessPointGroup, Long> {}

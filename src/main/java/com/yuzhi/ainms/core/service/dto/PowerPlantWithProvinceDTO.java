@@ -1,12 +1,12 @@
-package com.yuzhi.ainms.core.repository;
+package com.yuzhi.ainms.core.service.dto;
 
 import com.yuzhi.ainms.core.domain.PowerPlant;
 
-public class PowerPlantWithProvinceName {
+public class PowerPlantWithProvinceDTO {
     private PowerPlant powerPlant;
     private String provinceName;
 
-    public PowerPlantWithProvinceName(PowerPlant powerPlant, String provinceName) {
+    public PowerPlantWithProvinceDTO(PowerPlant powerPlant, String provinceName) {
         this.powerPlant = powerPlant;
         this.provinceName = provinceName;
     }
@@ -29,7 +29,7 @@ public class PowerPlantWithProvinceName {
 
     @Override
     public String toString() {
-        return "PowerPlantWithProvinceName{" +
+        return "PowerPlantWithProvinceDTO{" +
             "powerPlant=" + powerPlant +
             ", provinceName='" + provinceName + '\'' +
             '}';
