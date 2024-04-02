@@ -2,7 +2,7 @@
 name: ainmscore
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0.1
+    image: quay.io/keycloak/keycloak:24.0.2
     command: 'start-dev --import-realm'
     volumes:
       - ./realm-config:/opt/keycloak/data/import
@@ -18,11 +18,11 @@ services:
     # If you want to expose these ports outside your dev PC,
     # remove the "127.0.0.1:" prefix
     ports:
-      - 127.0.0.1:9090:9080
-      - 127.0.0.1:9443:9443
-    healthcheck:
-      test: 'bash /opt/keycloak/health-check.sh'
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 10s
+      - 9090:9080
+      - 9443:9443
+#    healthcheck:
+#      test: 'bash /opt/keycloak/health-check.sh'
+#      interval: 5s
+#      timeout: 5s
+#      retries: 20
+#      start_period: 10s
