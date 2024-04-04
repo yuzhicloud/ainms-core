@@ -1,0 +1,5 @@
+"id","nedn","neid","aliasname","nename","necategory","netype","nevendorname","neesn","neip","nemac","version","nestate","createtime","neiptype","subnet","neosversion"
+1500,,,,WAC101,,AC6800V,,,"10.170.69.101","30-E9-8E-95-F8-71",V200R020C10SPC100,,,,,
+1501,,,,WAC104,,AC6800V,,,"10.170.69.104","B0-08-75-EB-ED-2E",V200R020C10SPC100,,,,,
+1502,,,,WAC107,,AC6800V,,,"10.170.69.107","30-E9-8E-95-F9-DD",V200R020C10SPC100,,,,,
+1503,,,,WAC110,,AC6800V,,,"10.170.69.110","B0-08-75-EB-EE-00",V200R020C10SPC100,,,,,
