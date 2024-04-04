@@ -76,30 +76,30 @@
           This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
           Spring Boot configuration key.
     -->
-    <changeSet id="20240322100638-1-data" author="jhipster" context="faker">
-        <loadData
-                  file="config/liquibase/fake-data/access_controller.csv"
-                  separator=";"
-                  tableName="access_controller"
-                  usePreparedStatements="true">
-            <column name="id" type="numeric"/>
-            <column name="nedn" type="string"/>
-            <column name="neid" type="numeric"/>
-            <column name="aliasname" type="string"/>
-            <column name="nename" type="string"/>
-            <column name="necategory" type="string"/>
-            <column name="netype" type="string"/>
-            <column name="nevendorname" type="string"/>
-            <column name="neesn" type="string"/>
-            <column name="neip" type="string"/>
-            <column name="nemac" type="string"/>
-            <column name="version" type="string"/>
-            <column name="nestate" type="numeric"/>
-            <column name="createtime" type="string"/>
-            <column name="neiptype" type="numeric"/>
-            <column name="subnet" type="string"/>
-            <column name="neosversion" type="string"/>
-            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
-        </loadData>
-    </changeSet>
+<!--    <changeSet id="20240322100638-1-data" author="jhipster" context="faker">-->
+<!--        <loadData-->
+<!--                  file="config/liquibase/data/access_controller.csv"-->
+<!--                  separator=";"-->
+<!--                  tableName="access_controller"-->
+<!--                  usePreparedStatements="true">-->
+<!--            <column name="id" type="numeric"/>-->
+<!--            <column name="nedn" type="string"/>-->
+<!--            <column name="neid" type="numeric"/>-->
+<!--            <column name="aliasname" type="string"/>-->
+<!--            <column name="nename" type="string"/>-->
+<!--            <column name="necategory" type="string"/>-->
+<!--            <column name="netype" type="string"/>-->
+<!--            <column name="nevendorname" type="string"/>-->
+<!--            <column name="neesn" type="string"/>-->
+<!--            <column name="neip" type="string"/>-->
+<!--            <column name="nemac" type="string"/>-->
+<!--            <column name="version" type="string"/>-->
+<!--            <column name="nestate" type="numeric"/>-->
+<!--            <column name="createtime" type="string"/>-->
+<!--            <column name="neiptype" type="numeric"/>-->
+<!--            <column name="subnet" type="string"/>-->
+<!--            <column name="neosversion" type="string"/>-->
+<!--            &lt;!&ndash; jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here &ndash;&gt;-->
+<!--        </loadData>-->
+<!--    </changeSet>-->
 </databaseChangeLog>

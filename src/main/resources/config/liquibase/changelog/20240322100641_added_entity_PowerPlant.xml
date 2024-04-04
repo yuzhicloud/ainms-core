@@ -37,11 +37,12 @@
     <changeSet id="20240322100641-1-data" author="jhipster" context="init">
         <loadData
                   file="config/liquibase/data/power_plant.csv"
-                  separator=";"
+                  separator=","
                   tableName="power_plant"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
             <column name="power_plant_name" type="string"/>
+            <column name="province_id" type="number"/>
         </loadData>
     </changeSet>
 </databaseChangeLog>

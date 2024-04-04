@@ -37,7 +37,7 @@
     <changeSet id="20240322100642-1-data" author="jhipster" context="init">
         <loadData
                   file="config/liquibase/data/province.csv"
-                  separator=";"
+                  separator=","
                   tableName="province"
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
