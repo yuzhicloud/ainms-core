@@ -42,7 +42,6 @@
                   usePreparedStatements="true">
             <column name="id" type="numeric"/>
             <column name="power_plant_name" type="string"/>
-            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>
     </changeSet>
 </databaseChangeLog>
