@@ -204,6 +204,17 @@ public class PowerPlantResource {
         return powerPlantService.findAllwithProvinceName();
     }
 
+    /**
+     * {@code GET  /power-plants} : get all the powerPlants.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of powerPlants in body.
+     */
+    @GetMapping("/provinceid")
+    public List<PowerPlantWithProvinceDTO> getAllPowerPlantsByProvinceId(@RequestParam("id") Long provinceId){
+        log.debug("REST request to get all PowerPlants with province id: {}", provinceId);
+        return powerPlantService.findAllByProvinceId(provinceId);
+    }
+
   /**
    * {@code GET  /power-plants/:id} : get the "id" powerPlant.
    *

@@ -113,4 +113,13 @@ public class PowerPlantService {
     log.debug("Request to delete PowerPlant : {}", id);
     powerPlantRepository.deleteById(id);
   }
+
+    /**
+     * Get all power plants by province id
+     * @param provinceId
+     * @return
+     */
+    public List<PowerPlantWithProvinceDTO> findAllByProvinceId(Long provinceId) {
+        return powerPlantRepository.findAllByProvinceId(provinceId);
+    }
 }

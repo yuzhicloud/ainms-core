@@ -16,4 +16,6 @@ public interface PowerPlantRepository extends JpaRepository<PowerPlant, Long> {
     // @Query("SELECT pp, pv.provinceName FROM PowerPlant pp JOIN pp.province pv")
     @Query("SELECT new com.yuzhi.ainms.core.service.dto.PowerPlantWithProvinceDTO(pp, pv.provinceName) FROM PowerPlant pp JOIN pp.province pv")
     List<PowerPlantWithProvinceDTO> findAllPowerPlantsWithProvinceNames();
+
+    List<PowerPlantWithProvinceDTO> findAllByProvinceId(Long provinceId);
 }
