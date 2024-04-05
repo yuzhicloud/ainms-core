@@ -67,14 +67,15 @@ public class AccessPoint implements Serializable {
   @Column(name = "neosversion")
   private String neosversion;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+
   @JsonIgnoreProperties(
     value = { "accessPoints", "controller", "powerPlant" },
     allowSetters = true
   )
+
+  @ManyToOne(fetch = FetchType.LAZY)
   private AccessPointGroup group;
 
-  // jhipster-needle-entity-add-field - JHipster will add fields here
 
   public Long getId() {
     return this.id;

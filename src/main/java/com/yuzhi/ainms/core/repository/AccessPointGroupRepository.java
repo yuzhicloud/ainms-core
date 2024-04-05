@@ -12,4 +12,6 @@ import java.util.List;
 @SuppressWarnings("unused")
 @Repository
 public interface AccessPointGroupRepository extends JpaRepository<AccessPointGroup, Long> {
+    List<AccessPointGroup> findByPowerPlantId(Long powerPlantId);
+    List<AccessPointGroup> findByPowerPlantIdIn(List<Long> powerPlantIds);
 }

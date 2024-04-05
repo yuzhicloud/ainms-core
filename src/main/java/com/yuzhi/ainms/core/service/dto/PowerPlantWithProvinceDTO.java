@@ -4,8 +4,10 @@ import com.yuzhi.ainms.core.domain.PowerPlant;
 
 public class PowerPlantWithProvinceDTO {
     private PowerPlant powerPlant;
+    private Long powerPlantId;
     private Long provinceId;
     private String provinceName;
+    private String powerPlantName;
 
     public PowerPlantWithProvinceDTO(PowerPlant powerPlant, String provinceName) {
         this.powerPlant = powerPlant;
@@ -15,6 +17,14 @@ public class PowerPlantWithProvinceDTO {
     public PowerPlantWithProvinceDTO(PowerPlant powerPlant, Long provinceId) {
         this.powerPlant = powerPlant;
         this.provinceId = provinceId;
+    }
+
+    // 构造器、getter和setter
+    public PowerPlantWithProvinceDTO(Long powerPlantId, String powerPlantName, Long provinceId, String provinceName) {
+        this.powerPlantId = powerPlantId;
+        this.powerPlantName = powerPlantName;
+        this.provinceId = provinceId;
+        this.provinceName = provinceName;
     }
 
     public PowerPlant getPowerPlant() {
@@ -33,6 +43,14 @@ public class PowerPlantWithProvinceDTO {
         this.provinceName = provinceName;
     }
 
+    public Long getPowerPlantId() {
+        return powerPlantId;
+    }
+
+    public void setPowerPlantId(Long powerPlantId) {
+        this.powerPlantId = powerPlantId;
+    }
+
     public Long getProvinceId() {
         return provinceId;
     }
@@ -45,6 +63,7 @@ public class PowerPlantWithProvinceDTO {
     public String toString() {
         return "PowerPlantWithProvinceDTO{" +
             "powerPlant=" + powerPlant +
+            ", powerPlantId=" + powerPlantId +
             ", provinceId=" + provinceId +
             ", provinceName='" + provinceName + '\'' +
             '}';
