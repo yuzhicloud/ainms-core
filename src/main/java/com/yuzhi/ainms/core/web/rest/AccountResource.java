@@ -111,11 +111,13 @@ public class AccountResource {
     private class UserVM {
         private String login;
         private Set<String> authorities;
+        private Long provinceId;
 
         @JsonCreator
-        UserVM(String login, Set<String> authorities) {
+        UserVM(String login, Set<String> authorities, Long provinceId) {
             this.login = login;
             this.authorities = authorities;
+            this.provinceId = provinceId;
         }
 
         public boolean isActivated() {
@@ -126,6 +128,10 @@ public class AccountResource {
         }
         public String getLogin() {
             return login;
+        }
+
+        public Long getProvinceId() {
+            return provinceId;
         }
     }
 
@@ -159,12 +165,12 @@ public class AccountResource {
             User newUser = userService.createUser(adminUserDTO);
         }
 
-        UserVM userVM = new UserVM(adminUserDTO.getLogin(), adminUserDTO.getAuthorities());
+        UserVM userVM = new UserVM(adminUserDTO.getLogin(), adminUserDTO.getAuthorities(), adminUserDTO.getProvinceId());
         //double check;所有用户都赋予user权限，通过判断省份来查看本省的设备
         //double check,判断userVM的权限是否包含ROLE_USER,如果不包含则添加
         userVM.getAuthorities().add("ROLE_USER");
         log.debug("userVM has been created:" + userVM.getLogin().toString()
-            +":"+userVM.getAuthorities().toString());
+            +":"+userVM.getAuthorities().toString() + ":" + userVM.getProvinceId());
         return userVM;
     }
 }
