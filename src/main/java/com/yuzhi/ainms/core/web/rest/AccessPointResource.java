@@ -4,6 +4,7 @@ import com.yuzhi.ainms.core.domain.AccessPoint;
 import com.yuzhi.ainms.core.repository.AccessPointRepository;
 import com.yuzhi.ainms.core.service.AccessPointService;
 import com.yuzhi.ainms.core.web.rest.errors.BadRequestAlertException;
+import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -272,5 +273,14 @@ public class AccessPointResource {
         Page<AccessPoint> page = accessPointService.findAllAccessPointsByProvinceId(provinceId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+    * Get all the accessPoints by provinceName.
+    */
+    @GetMapping("/province-counts")
+    public ResponseEntity<List<ProvinceAccessPointCountDTO>> getAccessPointCountsByProvince() {
+        List<ProvinceAccessPointCountDTO> counts = accessPointService.getAccessPointCountsByProvince();
+        return ResponseEntity.ok(counts);
     }
 }

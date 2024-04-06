@@ -1,6 +1,7 @@
 package com.yuzhi.ainms.core.repository;
 
 import com.yuzhi.ainms.core.domain.AccessPoint;
+import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -16,6 +17,4 @@ import java.util.List;
 public interface AccessPointRepository extends JpaRepository<AccessPoint, Long> {
     @Query("SELECT ap FROM AccessPoint ap WHERE ap.group.id IN :groupIds")
     Page<AccessPoint> findByGroupIdsIn(@Param("groupIds") List<Long> groupIds, Pageable pageable);
-
-    ////   List<AccessPoint> findByGroupIdIn(List<Long> groupIds);
 }

@@ -2,6 +2,7 @@ package com.yuzhi.ainms.core.repository;
 
 import com.yuzhi.ainms.core.domain.PowerPlant;
 import com.yuzhi.ainms.core.service.dto.PowerPlantWithProvinceDTO;
+import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +21,11 @@ public interface PowerPlantRepository extends JpaRepository<PowerPlant, Long> {
     @Query("SELECT new com.yuzhi.ainms.core.service.dto.PowerPlantWithProvinceDTO(pp.id, pp.powerPlantName, p.id, p.provinceName) " +
         "FROM PowerPlant pp JOIN pp.province p WHERE p.id = :provinceId")
     List<PowerPlantWithProvinceDTO> findAllByProvinceId(Long provinceId);
+
+    @Query("SELECT new com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO(p.province.id, p.province.provinceName, COUNT(ap)) " +
+        "FROM AccessPoint ap " +
+        "JOIN ap.group g " +
+        "JOIN g.powerPlant p " +
+        "GROUP BY p.province.id, p.province.provinceName")
+    List<ProvinceAccessPointCountDTO> countAccessPointsByProvince();
 }

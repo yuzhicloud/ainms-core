@@ -15,6 +15,7 @@ public class PowerPlantWithProvinceDTO {
     }
 
     public PowerPlantWithProvinceDTO(PowerPlant powerPlant, Long provinceId) {
+
         this.powerPlant = powerPlant;
         this.provinceId = provinceId;
     }

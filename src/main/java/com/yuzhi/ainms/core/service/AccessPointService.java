@@ -2,7 +2,6 @@ package com.yuzhi.ainms.core.service;
 
 import com.yuzhi.ainms.core.domain.AccessPoint;
 import com.yuzhi.ainms.core.domain.AccessPointGroup;
-import com.yuzhi.ainms.core.domain.PowerPlant;
 import com.yuzhi.ainms.core.repository.AccessPointRepository;
 import com.yuzhi.ainms.core.repository.PowerPlantRepository;
 import com.yuzhi.ainms.core.repository.AccessPointGroupRepository;
@@ -12,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.yuzhi.ainms.core.service.dto.PowerPlantWithProvinceDTO;
+import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -183,8 +183,13 @@ public class AccessPointService {
         log.debug("==Request3 to findAllAccessPointsByProvinceId, accessPointGroupIds: {}", accessPointGroupIds.toString());
         Page<AccessPoint> accessPoints = accessPointRepository.findByGroupIdsIn(accessPointGroupIds, pageable);
         return accessPoints;
+    }
 
-        // 使用IN查询一次性获取所有这些AccessPointGroup下的AccessPoint
-        //return accessPointRepository.findByGroupIdIn(accessPointGroupIds);
+    /**
+    * 根据省份来获取每个省份的AP数量
+    *
+    */
+    public List<ProvinceAccessPointCountDTO> getAccessPointCountsByProvince() {
+        return powerPlantRepository.countAccessPointsByProvince();
     }
 }
