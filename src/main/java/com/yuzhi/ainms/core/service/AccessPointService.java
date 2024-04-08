@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.yuzhi.ainms.core.service.dto.PowerPlantAPStatisticsDTO;
 import com.yuzhi.ainms.core.service.dto.PowerPlantWithProvinceDTO;
+import com.yuzhi.ainms.core.service.dto.ProvinceAPStatisticsDTO;
 import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,5 +193,19 @@ public class AccessPointService {
     */
     public List<ProvinceAccessPointCountDTO> getAccessPointCountsByProvince() {
         return powerPlantRepository.countAccessPointsByProvince();
+    }
+
+    /**
+    * 根据省份来获取每个省份的AP统计情况
+    */
+    public List<ProvinceAPStatisticsDTO> getAPStatisticsByProvince() {
+        return accessPointRepository.apStatisticsByProvince();
+    }
+
+    /**
+    * 根据场站来获取每个场站的AP统计情况
+    */
+    public List<PowerPlantAPStatisticsDTO> getAPStatisticsByPowerPlant() {
+        return accessPointRepository.apStatisticsByPowerPlant();
     }
 }

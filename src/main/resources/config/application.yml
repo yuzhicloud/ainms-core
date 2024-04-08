@@ -153,12 +153,13 @@ spring:
   output:
     ansi:
       console-available: true
+
   security:
     oauth2:
        client:
          provider:
            oidc:
-             issuer-uri: http://192.168.1.230:9090/realms/jhipster
+             issuer-uri: http://192.168.22.5:9090/realms/jhipster
          registration:
            oidc:
              client-id: web_app
@@ -174,9 +175,9 @@ spring:
 #            client-id: WXTYJK
 #            client-secret: secret
 #            authorization-grant-type: authorization_code
-#            redirect-uri: http://192.168.1.230:9000/login/oauth2/code/oidc
+#            redirect-uri: http://192.168.22.5:9000/login/oauth2/code/oidc
 #            scope: openid, profile, email, offline_access
-#            client-authentication-method: client_secret_basic
+##            client-authentication-method: client_secret_basic
 #        provider:
 #          oidc:
 #            issuer-uri: http://${cas.server.address}:9080/cas/oidc

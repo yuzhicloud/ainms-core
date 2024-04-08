@@ -3,6 +3,8 @@ package com.yuzhi.ainms.core.web.rest;
 import com.yuzhi.ainms.core.domain.AccessPoint;
 import com.yuzhi.ainms.core.repository.AccessPointRepository;
 import com.yuzhi.ainms.core.service.AccessPointService;
+import com.yuzhi.ainms.core.service.dto.PowerPlantAPStatisticsDTO;
+import com.yuzhi.ainms.core.service.dto.ProvinceAPStatisticsDTO;
 import com.yuzhi.ainms.core.web.rest.errors.BadRequestAlertException;
 import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 
@@ -283,4 +285,23 @@ public class AccessPointResource {
         List<ProvinceAccessPointCountDTO> counts = accessPointService.getAccessPointCountsByProvince();
         return ResponseEntity.ok(counts);
     }
+
+    /**
+    * Get apStatistics by provinceName.
+    */
+    @GetMapping("/province-apstatistics")
+    public ResponseEntity<List<ProvinceAPStatisticsDTO>> getAccessPointStatisticsByProvince() {
+        List<ProvinceAPStatisticsDTO> counts = accessPointService.getAPStatisticsByProvince();
+        return ResponseEntity.ok(counts);
+    }
+
+    /**
+     * Get apStatistics by PowerPlantName
+     */
+    @GetMapping("/powerplant-apstatistics")
+    public ResponseEntity<List<PowerPlantAPStatisticsDTO>> getAccessPointStatisticsByPowerPlant() {
+        List<PowerPlantAPStatisticsDTO> counts = accessPointService.getAPStatisticsByPowerPlant();
+        return ResponseEntity.ok(counts);
+    }
+
 }
