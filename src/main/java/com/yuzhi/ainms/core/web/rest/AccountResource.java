@@ -1,20 +1,14 @@
 package com.yuzhi.ainms.core.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.yuzhi.ainms.core.domain.Province;
 import com.yuzhi.ainms.core.domain.User;
 import com.yuzhi.ainms.core.repository.ProvinceRepository;
 import com.yuzhi.ainms.core.repository.UserRepository;
 import com.yuzhi.ainms.core.service.ProvinceService;
 import com.yuzhi.ainms.core.service.UserService;
 import com.yuzhi.ainms.core.service.dto.AdminUserDTO;
-import com.yuzhi.ainms.core.service.dto.UserDTO;
-import com.yuzhi.ainms.core.web.rest.errors.BadRequestAlertException;
-import com.yuzhi.ainms.core.web.rest.errors.LoginAlreadyUsedException;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,11 +16,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -34,7 +26,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tech.jhipster.web.util.HeaderUtil;
 
 
 @RestController

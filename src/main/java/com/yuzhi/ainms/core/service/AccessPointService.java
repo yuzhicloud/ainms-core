@@ -208,4 +208,11 @@ public class AccessPointService {
     public List<PowerPlantAPStatisticsDTO> getAPStatisticsByPowerPlant() {
         return accessPointRepository.apStatisticsByPowerPlant();
     }
+
+    /**
+    * 根据mac地址来获取AP，并且更新AP的状态
+    */
+    public void updateAPStateByMac(String mac, String state) {
+        // accessPointRepository.updateAPStateByMac(mac, state);
+    }
 }

@@ -20,14 +20,15 @@
       "AccessPoint",
       "AccessPointGroup",
       "PowerPlant",
-      "Province"
+      "Province",
+      "NCEAPStatus"
     ],
     "feignClient": null,
     "gradleEnterpriseHost": null,
     "jhiPrefix": "ainms",
-    "jhipsterVersion": "8.2.1",
+    "jhipsterVersion": "8.3.0",
     "languages": ["en", "zh-cn"],
-    "lastLiquibaseTimestamp": 1711102002000,
+    "lastLiquibaseTimestamp": 1712825582000,
     "messageBroker": false,
     "microfrontend": null,
     "microfrontends": [],

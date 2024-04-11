@@ -1,0 +1,24 @@
+{
+  "annotations": {
+    "changelogDate": "20240411085302"
+  },
+  "applications": "*",
+  "entityTableName": "nceap_status",
+  "fields": [
+    {
+      "fieldName": "id",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "apSn",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "apStatus",
+      "fieldType": "Integer"
+    }
+  ],
+  "name": "NCEAPStatus",
+  "relationships": [],
+  "searchEngine": "no"
+}

@@ -1,0 +1,5 @@
+entity NCEAPStatus {
+  id Integer,
+  apSn String,
+  apStatus Integer
+}

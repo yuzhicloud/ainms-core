@@ -62,6 +62,11 @@
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
         <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+        <snmp4j.version>3.7.7</snmp4j.version>
+        <apache.httpclient.verion>4.5.14</apache.httpclient.verion>
+        <apache.httpclient.version>5.3.1</apache.httpclient.version>
+        <apache.httpclient.core.version>4.4.16</apache.httpclient.core.version>
+        <reactor-netty-http.version>1.1.17</reactor-netty-http.version>
     </properties>
 
     <dependencyManagement>
@@ -273,6 +278,26 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- snmp4j -->
+        <dependency>
+            <groupId>org.snmp4j</groupId>
+            <artifactId>snmp4j</artifactId>
+            <version>${snmp4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>${apache.httpclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.netty</groupId>
+            <artifactId>reactor-netty-http</artifactId>
+            <version>${reactor-netty-http.version}</version>
         </dependency>
     </dependencies>
 
