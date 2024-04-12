@@ -1,0 +1,48 @@
+{
+  "annotations": {
+    "changelogDate": "20240412072416"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "totalCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "onlineCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "offlineCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "otherCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "statisticDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "statisticTime",
+      "fieldType": "Instant"
+    }
+  ],
+  "name": "CountryStistics",
+  "relationships": [
+    {
+      "otherEntityName": "provinceStistics",
+      "otherEntityRelationshipName": "country",
+      "relationshipName": "province",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "searchEngine": "no"
+}

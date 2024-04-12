@@ -1,5 +1,34 @@
-entity NCEAPStatus {
-  id Integer,
-  apSn String,
-  apStatus Integer
+entity CountryStistics {
+  name String required,
+  totalCount Long,
+  onlineCount Long,
+  offlineCount Long,
+  otherCount Long,
+  statisticDate LocalDate,
+  statisticTime Instant
+}
+
+entity ProvinceStistics {
+  name String required,
+  totalCount Long,
+  onlineCount Long,
+  offlineCount Long,
+  otherCount Long,
+  statisticDate LocalDate,
+  statisticTime Instant
+}
+
+entity PowerPlantStistics {
+  name String required,
+  totalCount Long,
+  onlineCount Long,
+  offlineCount Long,
+  otherCount Long,
+  statisticDate LocalDate,
+  statisticTime Instant
+}
+
+relationship OneToMany {
+    CountryStistics{province} to ProvinceStistics{country},
+    ProvinceStistics{station} to PowerPlantStistics{province}
 }

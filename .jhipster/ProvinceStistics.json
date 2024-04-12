@@ -1,0 +1,55 @@
+{
+  "annotations": {
+    "changelogDate": "20240412072417"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "totalCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "onlineCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "offlineCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "otherCount",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "statisticDate",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "statisticTime",
+      "fieldType": "Instant"
+    }
+  ],
+  "name": "ProvinceStistics",
+  "relationships": [
+    {
+      "otherEntityName": "powerPlantStistics",
+      "otherEntityRelationshipName": "province",
+      "relationshipName": "station",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "countryStistics",
+      "otherEntityRelationshipName": "province",
+      "relationshipName": "country",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no"
+}

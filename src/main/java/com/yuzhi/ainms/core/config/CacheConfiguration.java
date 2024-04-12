@@ -154,6 +154,28 @@ public class CacheConfiguration {
         com.yuzhi.ainms.core.domain.Province.class.getName() + ".powerPlants"
       );
       createCache(cm, com.yuzhi.ainms.core.domain.NCEAPStatus.class.getName());
+      createCache(
+        cm,
+        com.yuzhi.ainms.core.domain.CountryStistics.class.getName()
+      );
+      createCache(
+        cm,
+        com.yuzhi.ainms.core.domain.CountryStistics.class.getName() +
+        ".provinces"
+      );
+      createCache(
+        cm,
+        com.yuzhi.ainms.core.domain.ProvinceStistics.class.getName()
+      );
+      createCache(
+        cm,
+        com.yuzhi.ainms.core.domain.ProvinceStistics.class.getName() +
+        ".stations"
+      );
+      createCache(
+        cm,
+        com.yuzhi.ainms.core.domain.PowerPlantStistics.class.getName()
+      );
       // jhipster-needle-ehcache-add-entry
     };
   }
