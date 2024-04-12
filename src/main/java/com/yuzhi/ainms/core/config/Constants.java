@@ -17,7 +17,7 @@ public final class Constants {
     public static final int NMS_AP_STATUS_OFFLINE= 4;
 
     /* NCE AP Status
-    * Éè±¸×´Ì¬£¬'0'---Õı³£¡¢'1'---¸æ¾¯¡¢'3'---ÀëÏß¡¢'4'---Î´×¢²á¡£iMaster NCE-WAN³¡¾°ÏÂ£¬ARÉè±¸ÎŞ¸æ¾¯×´Ì¬¡£*/
+     * è®¾å¤‡çŠ¶æ€ï¼Œ'0'---æ­£å¸¸ã€'1'---å‘Šè­¦ã€'3'---ç¦»çº¿ã€'4'---æœªæ³¨å†Œã€‚iMaster NCE-WANåœºæ™¯ä¸‹ï¼ŒARè®¾å¤‡æ— å‘Šè­¦çŠ¶æ€ã€‚*/
     public static final int NCE_AP_STATUS_ACTIVE = 0;
     public static final int NCE_AP_STATUS_OFFLINE= 1;
     private Constants() {}
