@@ -14,6 +14,9 @@ import com.yuzhi.ainms.core.service.dto.PowerPlantAPStatisticsDTO;
 import com.yuzhi.ainms.core.service.dto.PowerPlantWithProvinceDTO;
 import com.yuzhi.ainms.core.service.dto.ProvinceAPStatisticsDTO;
 import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
+import com.yuzhi.ainms.core.service.dto.NCEAccessPointDTO;
+import com.yuzhi.ainms.core.config.Constants;
+import com.yuzhi.ainms.nce.NCEDeviceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -210,9 +213,20 @@ public class AccessPointService {
     }
 
     /**
-    * 根据mac地址来获取AP，并且更新AP的状态
+    * 根据从NCE获取的AP的值，更新数据库中的AP状态
+    *  网管状态为11的AP，如果NCE中的状态不为0，则更新为4-offline
     */
-    public void updateAPStateByMac(String mac, String state) {
-        // accessPointRepository.updateAPStateByMac(mac, state);
+    @Transactional
+    public void updateAccessPoints(List<NCEAccessPointDTO> dtos) {
+        log.debug("==Apservice updateAccessPoints, accessPoints: {}", dtos.toString());
+        dtos.forEach(dto -> {
+            AccessPoint existingAccessPoint = accessPointRepository.findByEsn(dto.getApSn());
+            if (existingAccessPoint != null && dto.getApStatus() != Constants.NCE_AP_STATUS_ACTIVE
+                && existingAccessPoint.getNestate().equals(Constants.NMS_AP_STATUS_ACTIVE)) {
+                log.debug("==Apservice new state: 4-offline, existingAP: {}", existingAccessPoint.toString());
+                existingAccessPoint.setNestate(Constants.NMS_AP_STATUS_OFFLINE);
+                accessPointRepository.save(existingAccessPoint);
+            }
+        });
     }
 }
