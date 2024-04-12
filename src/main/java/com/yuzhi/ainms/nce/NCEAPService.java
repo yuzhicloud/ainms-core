@@ -27,10 +27,6 @@ public class NCEAPService {
         this.accessPointService = accessPointService;
     }
 
-    private String buildRequestUri(int pageIndex) {
-        return "https://" + nceConfiguration.getNceServer() + ":18002/controller/campus/v3/devices?pageIndex=" + pageIndex;
-    }
-
     // 每2小时执行一次的任务，获取所有分页的设备数据
     @Scheduled(fixedRate = 7200000)
     public void syncAllAccessPoints() {

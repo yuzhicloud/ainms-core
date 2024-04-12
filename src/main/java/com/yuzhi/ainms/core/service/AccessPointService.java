@@ -2,10 +2,13 @@ package com.yuzhi.ainms.core.service;
 
 import com.yuzhi.ainms.core.domain.AccessPoint;
 import com.yuzhi.ainms.core.domain.AccessPointGroup;
-import com.yuzhi.ainms.core.repository.AccessPointRepository;
-import com.yuzhi.ainms.core.repository.PowerPlantRepository;
-import com.yuzhi.ainms.core.repository.AccessPointGroupRepository;
+import com.yuzhi.ainms.core.domain.PowerPlantStistics;
+import com.yuzhi.ainms.core.domain.ProvinceStistics;
+import com.yuzhi.ainms.core.repository.*;
 
+import java.text.DateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +27,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static java.time.LocalTime.now;
+
 /**
  * Service Implementation for managing {@link com.yuzhi.ainms.core.domain.AccessPoint}.
  */
@@ -36,13 +41,20 @@ public class AccessPointService {
     private final AccessPointRepository accessPointRepository;
     private final PowerPlantRepository powerPlantRepository;
     private final AccessPointGroupRepository accessPointGroupRepository;
+    private final PowerPlantStisticsRepository powerPlantStisticsRepository;
+    private final ProvinceStisticsRepository provinceStisticsRepository;
 
     public AccessPointService(AccessPointRepository accessPointRepository,
                                 PowerPlantRepository powerPlantRepository,
-                            AccessPointGroupRepository accessPointGroupRepository) {
+                                AccessPointGroupRepository accessPointGroupRepository,
+                                PowerPlantStisticsRepository powerPlantStisticsRepository,
+                                ProvinceStisticsRepository provinceStisticsRepository
+                            ) {
         this.accessPointRepository = accessPointRepository;
         this.accessPointGroupRepository = accessPointGroupRepository;
         this.powerPlantRepository = powerPlantRepository;
+        this.provinceStisticsRepository = provinceStisticsRepository;
+        this.powerPlantStisticsRepository = powerPlantStisticsRepository;
     }
 
     /**
@@ -202,14 +214,42 @@ public class AccessPointService {
     * 根据省份来获取每个省份的AP统计情况
     */
     public List<ProvinceAPStatisticsDTO> getAPStatisticsByProvince() {
-        return accessPointRepository.apStatisticsByProvince();
+        List<ProvinceAPStatisticsDTO> result = accessPointRepository.apStatisticsByProvince();
+        // save to database
+        // change class in result to ProvinceStistics and save
+        result.forEach(dto -> {
+            ProvinceStistics provinceStistics = new ProvinceStistics();
+            provinceStistics.setName(dto.getProvinceName());
+            dto.setTotalAPs(provinceStistics.getTotalCount());
+            provinceStistics.setOnlineCount(dto.getStandByAPCount());
+            provinceStistics.setOfflineCount(dto.getOfflineAPCount());
+            provinceStistics.setOtherCount(dto.getOtherAPCount());
+            provinceStistics.setStatisticDate(LocalDate.now());
+            provinceStistics.setStatisticTime(Instant.now());
+            provinceStisticsRepository.save(provinceStistics);
+        });
+        return result;
     }
 
     /**
     * 根据场站来获取每个场站的AP统计情况
     */
     public List<PowerPlantAPStatisticsDTO> getAPStatisticsByPowerPlant() {
-        return accessPointRepository.apStatisticsByPowerPlant();
+        List<PowerPlantAPStatisticsDTO> result = accessPointRepository.apStatisticsByPowerPlant();
+        // save to database
+        // change class in result to PowerPlantStistics and save
+        result.forEach(dto -> {
+            PowerPlantStistics powerPlantStistics = new PowerPlantStistics();
+            powerPlantStistics.setName(dto.getPowerPlantName());
+            powerPlantStistics.setTotalCount(dto.getTotalAPs());
+            powerPlantStistics.setOnlineCount(dto.getStandByAPCount());
+            powerPlantStistics.setOfflineCount(dto.getOfflineAPCount());
+            powerPlantStistics.setOtherCount(dto.getOtherAPCount());
+            powerPlantStistics.setStatisticDate(LocalDate.now());
+            powerPlantStistics.setStatisticTime(Instant.now());
+            powerPlantStisticsRepository.save(powerPlantStistics);
+        });
+        return result;
     }
 
     /**

@@ -1,5 +1,5 @@
 entity CountryStistics {
-  name String required,
+  countryName String required,
   totalCount Long,
   onlineCount Long,
   offlineCount Long,
@@ -9,7 +9,7 @@ entity CountryStistics {
 }
 
 entity ProvinceStistics {
-  name String required,
+  provinceName String required,
   totalCount Long,
   onlineCount Long,
   offlineCount Long,
@@ -19,7 +19,7 @@ entity ProvinceStistics {
 }
 
 entity PowerPlantStistics {
-  name String required,
+  powerplantName String required,
   totalCount Long,
   onlineCount Long,
   offlineCount Long,
