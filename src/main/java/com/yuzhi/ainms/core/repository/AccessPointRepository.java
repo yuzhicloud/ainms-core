@@ -40,4 +40,6 @@ public interface AccessPointRepository extends JpaRepository<AccessPoint, Long> 
         "JOIN pp.province p " +
         "GROUP BY pp.id, pp.powerPlantName, p.provinceName")
     List<PowerPlantAPStatisticsDTO> apStatisticsByPowerPlant();
+    @Query("SELECT ap FROM AccessPoint ap WHERE ap.neesn= :esn")
+    AccessPoint findByEsn(String esn);
 }
