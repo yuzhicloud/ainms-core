@@ -51,7 +51,7 @@ public class APEventHandler {
     private void updateDeviceStatus(VariableBinding vb, String status) {
         String apMac = vb.getVariable().toString();
         // 调用设备服务更新状态
-        accessPointService.updateAPStateByMac(apMac, status);
+        // accessPointService.updateAPStateByMac(apMac, status);
         logger.debug("Device status updated for MAC: {}, Status: {}", apMac, status);
     }
 }
