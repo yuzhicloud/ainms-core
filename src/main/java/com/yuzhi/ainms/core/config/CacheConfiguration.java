@@ -156,15 +156,6 @@ public class CacheConfiguration {
       createCache(cm, com.yuzhi.ainms.core.domain.NCEAPStatus.class.getName());
       createCache(
         cm,
-        com.yuzhi.ainms.core.domain.CountryStistics.class.getName()
-      );
-      createCache(
-        cm,
-        com.yuzhi.ainms.core.domain.CountryStistics.class.getName() +
-        ".provinces"
-      );
-      createCache(
-        cm,
         com.yuzhi.ainms.core.domain.ProvinceStistics.class.getName()
       );
       createCache(

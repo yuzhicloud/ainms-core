@@ -117,9 +117,9 @@ public class ProvinceStisticsAsserts {
       .as("Verify ProvinceStistics relationships")
       .satisfies(
         e ->
-          assertThat(e.getCountry())
+          assertThat(e.getPowerplants())
             .as("check country")
-            .isEqualTo(actual.getCountry())
+            .isEqualTo(actual.getPowerplants())
       );
   }
 }

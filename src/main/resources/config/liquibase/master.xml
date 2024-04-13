@@ -16,16 +16,9 @@
     <include file="config/liquibase/changelog/20240322100640_added_entity_AccessPointGroup.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240322100641_added_entity_PowerPlant.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240322100642_added_entity_Province.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20240411085302_added_entity_NCEAPStatus.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20240412072416_added_entity_CountryStistics.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240412072417_added_entity_ProvinceStistics.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240412072418_added_entity_PowerPlantStistics.xml" relativeToChangelogFile="false"/>
-    <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20240322100639_added_entity_constraints_AccessPoint.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240322100640_added_entity_constraints_AccessPointGroup.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20240322100641_added_entity_constraints_PowerPlant.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20240412072417_added_entity_constraints_ProvinceStistics.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20240412072418_added_entity_constraints_PowerPlantStistics.xml" relativeToChangelogFile="false"/>
-    <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
-    <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

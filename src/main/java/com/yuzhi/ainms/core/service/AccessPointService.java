@@ -6,9 +6,7 @@ import com.yuzhi.ainms.core.domain.PowerPlantStistics;
 import com.yuzhi.ainms.core.domain.ProvinceStistics;
 import com.yuzhi.ainms.core.repository.*;
 
-import java.text.DateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,7 +17,6 @@ import com.yuzhi.ainms.core.service.dto.ProvinceAPStatisticsDTO;
 import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 import com.yuzhi.ainms.core.service.dto.NCEAccessPointDTO;
 import com.yuzhi.ainms.core.config.Constants;
-import com.yuzhi.ainms.nce.NCEDeviceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -214,18 +211,24 @@ public class AccessPointService {
     * 根据省份来获取每个省份的AP统计情况
     */
     public List<ProvinceAPStatisticsDTO> getAPStatisticsByProvince() {
+        log.debug("==getAPStatisticsByProvince");
         List<ProvinceAPStatisticsDTO> result = accessPointRepository.apStatisticsByProvince();
         // save to database
         // change class in result to ProvinceStistics and save
+        ZoneId zoneId = ZoneId.of("Asia/Shanghai");
+        LocalDate localDate = LocalDate.now(zoneId);
+        LocalTime localTime = LocalTime.now(zoneId);
+        log.debug("==getAPStatisticsByProvince, localtime: {}" + localTime.toString());
+
         result.forEach(dto -> {
             ProvinceStistics provinceStistics = new ProvinceStistics();
             provinceStistics.setName(dto.getProvinceName());
-            dto.setTotalAPs(provinceStistics.getTotalCount());
+            provinceStistics.setTotalCount(dto.getTotalAPs());
             provinceStistics.setOnlineCount(dto.getStandByAPCount());
             provinceStistics.setOfflineCount(dto.getOfflineAPCount());
             provinceStistics.setOtherCount(dto.getOtherAPCount());
-            provinceStistics.setStatisticDate(LocalDate.now());
-            provinceStistics.setStatisticTime(Instant.now());
+            provinceStistics.setStatisticDate(localDate);
+            provinceStistics.setStatisticTime(localTime);
             provinceStisticsRepository.save(provinceStistics);
         });
         return result;
@@ -238,6 +241,9 @@ public class AccessPointService {
         List<PowerPlantAPStatisticsDTO> result = accessPointRepository.apStatisticsByPowerPlant();
         // save to database
         // change class in result to PowerPlantStistics and save
+        ZoneId zoneId = ZoneId.of("Asia/Shanghai");
+        LocalDate localDate = LocalDate.now(zoneId);
+        LocalTime localTime = LocalTime.now(zoneId);
         result.forEach(dto -> {
             PowerPlantStistics powerPlantStistics = new PowerPlantStistics();
             powerPlantStistics.setName(dto.getPowerPlantName());
@@ -245,8 +251,8 @@ public class AccessPointService {
             powerPlantStistics.setOnlineCount(dto.getStandByAPCount());
             powerPlantStistics.setOfflineCount(dto.getOfflineAPCount());
             powerPlantStistics.setOtherCount(dto.getOtherAPCount());
-            powerPlantStistics.setStatisticDate(LocalDate.now());
-            powerPlantStistics.setStatisticTime(Instant.now());
+            powerPlantStistics.setStatisticDate(localDate);
+            powerPlantStistics.setStatisticTime(localTime);
             powerPlantStisticsRepository.save(powerPlantStistics);
         });
         return result;
