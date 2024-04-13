@@ -1,5 +1,7 @@
 package com.yuzhi.ainms.nce;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class NCEDeviceResponse {
@@ -73,6 +75,7 @@ public class NCEDeviceResponse {
 // 构造器、getter和setter省略
 
     public static class AccessPointData {
+        @JsonProperty("id")
         private String id;
         private String name;
         private String esn;

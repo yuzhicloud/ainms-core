@@ -1,25 +1,20 @@
 package com.yuzhi.ainms.nce;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class NCETokenResponse {
+    private TokenData data;
+    private String errcode;
+    private String errmsg;
 
-    private Data data; // 映射"data"部分
-    private String errcode; // 映射"errcode"字段
-    private String errmsg; // 映射"errmsg"字段
-
-    // 构造器
-    public NCETokenResponse() {
-    }
-
-    // data的getter和setter
-    public Data getData() {
+    public TokenData getData() {
         return data;
     }
 
-    public void setData(Data data) {
+    public void setData(TokenData data) {
         this.data = data;
     }
 
-    // errcode的getter和setter
     public String getErrcode() {
         return errcode;
     }
@@ -28,7 +23,6 @@ public class NCETokenResponse {
         this.errcode = errcode;
     }
 
-    // errmsg的getter和setter
     public String getErrmsg() {
         return errmsg;
     }
@@ -37,16 +31,11 @@ public class NCETokenResponse {
         this.errmsg = errmsg;
     }
 
-    // Data内部类，用于映射"data"字段里的内容
-    public static class Data {
-        private String tokenId; // 映射"token_id"字段
-        private String expiredDate; // 映射"expiredDate"字段
+    public static class TokenData {
+        @JsonProperty("token_id")
+        private String tokenId;
+        private String expiredDate;
 
-        // 构造器
-        public Data() {
-        }
-
-        // tokenId的getter和setter
         public String getTokenId() {
             return tokenId;
         }
@@ -55,7 +44,6 @@ public class NCETokenResponse {
             this.tokenId = tokenId;
         }
 
-        // expiredDate的getter和setter
         public String getExpiredDate() {
             return expiredDate;
         }
@@ -65,4 +53,3 @@ public class NCETokenResponse {
         }
     }
 }
-
