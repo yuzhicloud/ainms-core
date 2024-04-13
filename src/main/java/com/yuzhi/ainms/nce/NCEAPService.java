@@ -4,10 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuzhi.ainms.core.service.AccessPointService;
 import com.yuzhi.ainms.core.service.dto.NCEAccessPointDTO;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +21,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
+import reactor.netty.tcp.SslProvider;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
 
 @Service
 @Transactional
@@ -28,9 +42,38 @@ public class NCEAPService {
     private final AccessPointService accessPointService;
 
     public NCEAPService(WebClient webClient, NCEConfiguration nceConfig, AccessPointService accessPointService) {
-        this.webClient = webClient;
+
         this.nceConfiguration = nceConfig;
         this.accessPointService = accessPointService;
+        HttpClient httpClient = HttpClient.create(ConnectionProvider.builder("custom")
+                .maxConnections(500) // 设置最大连接数
+                .pendingAcquireMaxCount(-1) // 无限制等待队列
+                .maxIdleTime(Duration.ofMinutes(30)) // 设置连接最大空闲时间
+                .maxLifeTime(Duration.ofHours(1)) // 设置连接最大生存时间
+                .build())
+            .secure(sslContextSpec -> sslContextSpec.sslContext(SslProvider.builder()
+                .sslContext(SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE))
+                .defaultConfiguration(SslProvider.DefaultConfigurationType.NONE)
+                .build().getSslContext()))
+            .responseTimeout(Duration.ofSeconds(30))
+            .doOnConnected(conn ->
+                conn.addHandlerLast(new ReadTimeoutHandler(30)) // 读取超时
+                    .addHandlerLast(new WriteTimeoutHandler(30))); // 写入超时
+
+        this.webClient = WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
+            .baseUrl("https://10.170.69.87:18002")
+            .build();
+//        HttpClient httpClient = HttpClient.create()
+//            .secure(sslContextSpec -> sslContextSpec.sslContext(SslProvider.builder()
+//                .sslContext(SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE))
+//                .defaultConfiguration(SslProvider.DefaultConfigurationType.NONE)
+//                .build().getSslContext()))
+//            .responseTimeout(Duration.ofSeconds(30));
+//        this.webClient = WebClient.builder()
+//            .clientConnector(new ReactorClientHttpConnector(httpClient))
+//            .baseUrl("https://10.170.69.87:18002")
+//            .build();
     }
 
     // 每2小时执行一次的任务，获取所有分页的设备数据
@@ -71,7 +114,6 @@ public class NCEAPService {
             });
     }
 
-    // 获取指定页码的设备数据
     private Mono<NCEDeviceResponse> fetchAccessPointsPage(int pageIndex) {
         log.debug("Start fetching devices from page: pageIndex={}, pageSize={}", pageIndex, 20);
 
@@ -80,7 +122,7 @@ public class NCEAPService {
                 String requestUri = UriComponentsBuilder.fromUriString("https://" + nceConfiguration.getNceServer() + ":" + nceConfiguration.getNcePort())
                     .path("/controller/campus/v3/devices")
                     .queryParam("pageIndex", pageIndex)
-                    .queryParam("pageSize", 20)  // 指定每页1000条记录
+                    .queryParam("pageSize", 100)  // 指定每页1000条记录
                     .queryParam("deviceType","AP")
                     .toUriString();
 
@@ -119,7 +161,7 @@ public class NCEAPService {
     private NCEAccessPointDTO convertToAccessPoint(NCEDeviceResponse.AccessPointData data) {
         // 转换逻辑
         NCEAccessPointDTO nceAccessPointDTO = new NCEAccessPointDTO(data.getId(),
-        data.getName(),data.getEsn(),data.getNeType(),Integer.getInteger(data.getStatus()));
+            data.getName(), data.getEsn(), data.getNeType(), Integer.parseInt(data.getStatus()));
         return nceAccessPointDTO;
     }
 
