@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,18 +41,21 @@ public class AccessPointService {
     private final AccessPointGroupRepository accessPointGroupRepository;
     private final PowerPlantStisticsRepository powerPlantStisticsRepository;
     private final ProvinceStisticsRepository provinceStisticsRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     public AccessPointService(AccessPointRepository accessPointRepository,
                                 PowerPlantRepository powerPlantRepository,
                                 AccessPointGroupRepository accessPointGroupRepository,
                                 PowerPlantStisticsRepository powerPlantStisticsRepository,
-                                ProvinceStisticsRepository provinceStisticsRepository
+                                ProvinceStisticsRepository provinceStisticsRepository,
+                                SimpMessagingTemplate simpMessagingTemplate
                             ) {
         this.accessPointRepository = accessPointRepository;
         this.accessPointGroupRepository = accessPointGroupRepository;
         this.powerPlantRepository = powerPlantRepository;
         this.provinceStisticsRepository = provinceStisticsRepository;
         this.powerPlantStisticsRepository = powerPlantStisticsRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     /**
@@ -231,6 +235,9 @@ public class AccessPointService {
             provinceStistics.setStatisticTime(localTime);
             provinceStisticsRepository.save(provinceStistics);
         });
+
+        // 发送更新通知到前端
+        notifyFrontend("updateAPs,successful");
         return result;
     }
 
@@ -255,6 +262,7 @@ public class AccessPointService {
             powerPlantStistics.setStatisticTime(localTime);
             powerPlantStisticsRepository.save(powerPlantStistics);
         });
+        notifyFrontend("updateAPs,successful");
         return result;
     }
 
@@ -274,5 +282,9 @@ public class AccessPointService {
                 accessPointRepository.save(existingAccessPoint);
             }
         });
+    }
+
+    private void notifyFrontend(Object message) {
+        this.simpMessagingTemplate.convertAndSend("/topic/update", message);
     }
 }

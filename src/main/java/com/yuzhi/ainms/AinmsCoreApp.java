@@ -1,7 +1,8 @@
-package com.yuzhi.ainms.core;
+package com.yuzhi.ainms;
 
 import com.yuzhi.ainms.core.config.ApplicationProperties;
 import com.yuzhi.ainms.core.config.CRLFLogConverter;
+import com.yuzhi.ainms.nce.NCEConfiguration;
 import jakarta.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -21,7 +22,7 @@ import tech.jhipster.config.DefaultProfileUtil;
 import tech.jhipster.config.JHipsterConstants;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class })
+@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class})
 @EnableScheduling
 public class AinmsCoreApp {
 

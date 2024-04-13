@@ -1,5 +1,6 @@
 package com.yuzhi.ainms.nce;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -7,8 +8,17 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "nce")
 public class NCEConfiguration {
 
+    @Value("${nce.server}")
     private String nceServer;
+
+    @Value("${nce.port}")
+    private String ncePort;
+
+
+    @Value("${nce.nceusername}")
     private String nceUsername;
+
+    @Value("${nce.nceuserpwd}")
     private String nceUserpwd;
 
     public String getNceServer() {
@@ -35,10 +45,19 @@ public class NCEConfiguration {
         this.nceUserpwd = nceUserpwd;
     }
 
+    public String getNcePort() {
+        return ncePort;
+    }
+
+    public void setNcePort(String ncePort) {
+        this.ncePort = ncePort;
+    }
+
     @Override
     public String toString() {
         return "NCEConfiguration{" +
             "nceServer='" + nceServer + '\'' +
+            ", ncePort='" + ncePort + '\'' +
             ", nceUsername='" + nceUsername + '\'' +
             ", nceUserpwd='" + nceUserpwd + '\'' +
             '}';

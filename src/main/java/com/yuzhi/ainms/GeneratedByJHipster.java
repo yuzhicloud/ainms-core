@@ -1,4 +1,4 @@
-package com.yuzhi.ainms.core;
+package com.yuzhi.ainms;
 
 import jakarta.annotation.Generated;
 import java.lang.annotation.ElementType;

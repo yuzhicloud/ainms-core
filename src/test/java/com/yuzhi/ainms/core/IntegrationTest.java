@@ -1,5 +1,6 @@
 package com.yuzhi.ainms.core;
 
+import com.yuzhi.ainms.AinmsCoreApp;
 import com.yuzhi.ainms.core.config.AsyncSyncConfiguration;
 import com.yuzhi.ainms.core.config.EmbeddedSQL;
 import com.yuzhi.ainms.core.config.JacksonConfiguration;

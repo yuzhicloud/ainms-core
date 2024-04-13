@@ -1,13 +1,3 @@
-entity CountryStistics {
-  countryName String required,
-  totalCount Long,
-  onlineCount Long,
-  offlineCount Long,
-  otherCount Long,
-  statisticDate LocalDate,
-  statisticTime Instant
-}
-
 entity ProvinceStistics {
   provinceName String required,
   totalCount Long,
@@ -29,6 +19,5 @@ entity PowerPlantStistics {
 }
 
 relationship OneToMany {
-    CountryStistics{province} to ProvinceStistics{country},
     ProvinceStistics{station} to PowerPlantStistics{province}
 }

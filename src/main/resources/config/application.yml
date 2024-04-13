@@ -248,5 +248,6 @@ jhipster:
 # application:
 nce:
   server: 10.170.69.87
+  port: 18002
   nceusername: lightnmsuser
   nceuserpwd: Longyuandianli@123
