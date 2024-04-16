@@ -10,25 +10,18 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
 import reactor.netty.tcp.SslProvider;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 
 @Service
@@ -64,20 +57,9 @@ public class NCEAPService {
             .clientConnector(new ReactorClientHttpConnector(httpClient))
             .baseUrl("https://10.170.69.87:18002")
             .build();
-//        HttpClient httpClient = HttpClient.create()
-//            .secure(sslContextSpec -> sslContextSpec.sslContext(SslProvider.builder()
-//                .sslContext(SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE))
-//                .defaultConfiguration(SslProvider.DefaultConfigurationType.NONE)
-//                .build().getSslContext()))
-//            .responseTimeout(Duration.ofSeconds(30));
-//        this.webClient = WebClient.builder()
-//            .clientConnector(new ReactorClientHttpConnector(httpClient))
-//            .baseUrl("https://10.170.69.87:18002")
-//            .build();
     }
 
-    // 每2小时执行一次的任务，获取所有分页的设备数据
-    @Scheduled(fixedRate = 7200000)
+    // 每2小时执行一次的任务，获取所有分页的设备数据,由NCEAPTaskScheduler调用
     public void syncAllAccessPoints() {
         log.debug("==Method call: syncAllAccessPoints");
         // Now you have a List<NCEAccessPointDTO>, you can process it
