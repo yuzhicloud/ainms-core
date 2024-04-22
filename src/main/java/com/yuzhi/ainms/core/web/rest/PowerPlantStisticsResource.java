@@ -1,12 +1,14 @@
 package com.yuzhi.ainms.core.web.rest;
 
 import com.yuzhi.ainms.core.domain.PowerPlantStistics;
+import com.yuzhi.ainms.core.domain.ProvinceStistics;
 import com.yuzhi.ainms.core.repository.PowerPlantStisticsRepository;
 import com.yuzhi.ainms.core.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -238,6 +240,21 @@ public class PowerPlantStisticsResource {
     log.debug("REST request to get all PowerPlantStistics");
     return powerPlantStisticsRepository.findAll();
   }
+
+    /**
+     * {@code GET  /province-stistics/byDate}
+     *
+     * @param dateStr  the date of the provinceStistics to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/date")
+    public List<PowerPlantStistics> getProvinceStisticsByDate(
+        @PathVariable("date") String dateStr
+    ) {
+        log.debug("REST request to get ProvinceStistics By data {}", dateStr);
+        LocalDate date = LocalDate.parse(dateStr);
+        return powerPlantStisticsRepository.findByDate(date.toString());
+    }
 
   /**
    * {@code GET  /power-plant-stistics/:id} : get the "id" powerPlantStistics.

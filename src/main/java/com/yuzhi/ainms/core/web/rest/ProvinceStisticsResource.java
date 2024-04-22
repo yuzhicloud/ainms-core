@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -268,14 +269,15 @@ public class ProvinceStisticsResource {
     /**
      * {@code GET  /province-stistics/byDate}
      *
-     * @param id the id of the provinceStistics to retrieve.
+     * @param dateStr  the date of the provinceStistics to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/date")
     public List<ProvinceStistics> getProvinceStisticsByDate(
-        @PathVariable("date") String date
+        @PathVariable("date") String dateStr
     ) {
-        log.debug("REST request to get ProvinceStistics By data {}", date);
+        log.debug("REST request to get ProvinceStistics By data {}", dateStr);
+        LocalDate date = LocalDate.parse(dateStr);
         return provinceStisticsRepository.findByDate(date.toString());
     }
 
