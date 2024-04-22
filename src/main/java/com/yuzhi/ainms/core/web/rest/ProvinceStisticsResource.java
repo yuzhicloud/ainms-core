@@ -273,12 +273,12 @@ public class ProvinceStisticsResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/byDate/{dateStr}")
-    public List<ProvinceStistics> getProvinceStisticsByDate(
+    public List<ProvinceStistics> getProvinceStatisticsByDate(
         @PathVariable("dateStr") String dateStr
     ) {
         log.debug("REST request to get ProvinceStistics By data {}", dateStr);
         LocalDate date = LocalDate.parse(dateStr);
-        return provinceStisticsRepository.findByDate(date.toString());
+        return provinceStisticsRepository.findByDate(date);
     }
 
     /**
