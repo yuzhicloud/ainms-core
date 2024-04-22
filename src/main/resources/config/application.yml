@@ -159,7 +159,7 @@ spring:
        client:
          provider:
            oidc:
-             issuer-uri: http://192.168.22.5:9090/realms/jhipster
+             issuer-uri: http://10.170.248.35:9090/realms/jhipster
          registration:
            oidc:
              client-id: web_app
