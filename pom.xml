@@ -67,6 +67,7 @@
         <apache.httpclient.version>5.3.1</apache.httpclient.version>
         <apache.httpclient.core.version>4.4.16</apache.httpclient.core.version>
         <reactor-netty-http.version>1.1.17</reactor-netty-http.version>
+        <apache-csv.version>1.10.0</apache-csv.version>
     </properties>
 
     <dependencyManagement>
@@ -302,6 +303,11 @@
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty-http</artifactId>
             <version>${reactor-netty-http.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>${apache-csv.version}</version>
         </dependency>
     </dependencies>
 

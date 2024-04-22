@@ -5,13 +5,16 @@ import com.yuzhi.ainms.core.repository.ProvinceStisticsRepository;
 import com.yuzhi.ainms.core.service.AccessPointService;
 import com.yuzhi.ainms.core.service.dto.PowerPlantAPStatisticsDTO;
 import com.yuzhi.ainms.core.service.dto.ProvinceAPStatisticsDTO;
+import com.yuzhi.ainms.core.service.stistics.APStatisticsService;
 import com.yuzhi.ainms.core.web.rest.errors.BadRequestAlertException;
 import com.yuzhi.ainms.nce.NCEAPService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -20,9 +23,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.PathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +52,7 @@ public class ProvinceStisticsResource {
 
     private final AccessPointService accessPointService;
     private final NCEAPService nceapService;
+    private final APStatisticsService apStatisticsService;
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -57,11 +62,13 @@ public class ProvinceStisticsResource {
     public ProvinceStisticsResource(
         ProvinceStisticsRepository provinceStisticsRepository,
         AccessPointService accessPointService,
-        NCEAPService nceapService
+        NCEAPService nceapService,
+        APStatisticsService apStatisticsService
     ) {
         this.accessPointService = accessPointService;
         this.provinceStisticsRepository = provinceStisticsRepository;
         this.nceapService = nceapService;
+        this.apStatisticsService = apStatisticsService;
     }
 
     /**
@@ -333,5 +340,24 @@ public class ProvinceStisticsResource {
         List<PowerPlantAPStatisticsDTO> countsPowerPlant = accessPointService.updateAPStatisticsByPowerPlant();
         log.debug("REST 1 request to get NEC AP statistics: {}", countsProvince);
         log.debug("REST 2 request to get NEC AP statistics: {}", countsPowerPlant);
+    }
+
+
+    /**
+     *
+     * @return
+     * @throws IOException
+     */
+    @GetMapping("/download-csv")
+    public ResponseEntity<Resource> downloadCsv() throws IOException {
+        Path path = apStatisticsService.createCsvFileByProvince();
+        Resource resource = new PathResource(path);
+        String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/api/province-stistics/download-csv")
+            .toUriString();
+
+        return ResponseEntity.ok()
+            .header("Content-Disposition", "attachment; filename=\"" + path.getFileName().toString() + "\"")
+            .body(resource);
     }
 }
