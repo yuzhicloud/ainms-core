@@ -253,7 +253,7 @@ public class PowerPlantStisticsResource {
     @GetMapping("/byDate/{dateStr}")
     public ResponseEntity<Page<PowerPlantStistics>> getProvinceStisticsByDate(
         @PathVariable("dateStr") String dateStr,
-        @PageableDefault(size = 30) Pageable pageable
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         log.debug("REST request to get ProvinceStistics By data {}", dateStr);
         LocalDate date = LocalDate.parse(dateStr);
