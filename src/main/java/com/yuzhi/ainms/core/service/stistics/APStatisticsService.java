@@ -5,13 +5,18 @@ import com.yuzhi.ainms.core.domain.ProvinceStistics;
 import com.yuzhi.ainms.core.repository.PowerPlantStisticsRepository;
 import com.yuzhi.ainms.core.repository.ProvinceStisticsRepository;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVFormat.Builder;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
+
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -58,15 +63,21 @@ public class APStatisticsService {
         String fileName = "statisticsByProvince_" + timestamp + ".csv";
 
         Path file = Paths.get(ResourceUtils.getFile("classpath:").getPath(), fileName);
-        FileWriter out = new FileWriter(file.toString());
+        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file.toString()), StandardCharsets.UTF_8);
+        out.write('\ufeff');
 
-        // try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT
-        try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL
-            .withHeader("ID", "Province Name", "Total Count", "Online Count", "Offline Count", "Other Count", "Statistic Date", "Statistic Time", "Rate"))) {
+        String HEADERS = "ID,Province Name,Total Count,Online Count,Offline Count,Other Count,Statistic Date,Statistic Time,Rate";
+        CSVFormat csvFormat = CSVFormat.EXCEL.builder()
+            .setHeader(HEADERS)
+            .build();
+
+        try (CSVPrinter printer = new CSVPrinter(out, csvFormat)){
             for (ProvinceStistics record : records) {
                 double rate = record.getTotalCount() > 0 ? (double) record.getOnlineCount() / record.getTotalCount() : 0;
-                printer.printRecord(record.getId(), record.getName(), record.getTotalCount(), record.getOnlineCount(), record.getOfflineCount(),
-                    record.getOtherCount(), record.getStatisticDate(), record.getStatisticTime(), rate);
+                String formattedRate = String.format("%.2f", rate);
+                String name = new String(record.getName().getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+                printer.printRecord(record.getId(), name, record.getTotalCount(), record.getOnlineCount(), record.getOfflineCount(),
+                    record.getOtherCount(), record.getStatisticDate(), record.getStatisticTime(), formattedRate);
             }
         }
         return file;
@@ -85,15 +96,20 @@ public class APStatisticsService {
         String fileName = "statisticsByProvince_" + timestamp + ".csv";
 
         Path file = Paths.get(ResourceUtils.getFile("classpath:").getPath(), fileName);
-        FileWriter out = new FileWriter(file.toString());
+        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file.toString()), StandardCharsets.UTF_8);
+        out.write('\ufeff');
+        String HEADERS = "ID,PowerPlant Name,Total Count,Online Count,Offline Count,Other Count,Statistic Date,Statistic Time,Rate";
+        CSVFormat csvFormat = CSVFormat.EXCEL.builder()
+            .setHeader(HEADERS)
+            .build();
 
-        // try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.DEFAULT
-        try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL
-            .withHeader("ID", "Province Name", "Total Count", "Online Count", "Offline Count", "Other Count", "Statistic Date", "Statistic Time", "Rate"))) {
+        try (CSVPrinter printer = new CSVPrinter(out, csvFormat)){
             for (PowerPlantStistics record : records) {
                 double rate = record.getTotalCount() > 0 ? (double) record.getOnlineCount() / record.getTotalCount() : 0;
-                printer.printRecord(record.getId(), record.getName(), record.getTotalCount(), record.getOnlineCount(), record.getOfflineCount(),
-                    record.getOtherCount(), record.getStatisticDate(), record.getStatisticTime(), rate);
+                String formattedRate = String.format("%.2f", rate);
+                String name = new String(record.getName().getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+                printer.printRecord(record.getId(), name, record.getTotalCount(), record.getOnlineCount(), record.getOfflineCount(),
+                    record.getOtherCount(), record.getStatisticDate(), record.getStatisticTime(), formattedRate);
             }
         }
         return file;
