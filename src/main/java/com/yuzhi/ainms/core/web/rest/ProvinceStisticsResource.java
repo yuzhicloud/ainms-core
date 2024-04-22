@@ -272,7 +272,7 @@ public class ProvinceStisticsResource {
      * @param dateStr  the date of the provinceStistics to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/date")
+    @GetMapping("/byDate")
     public List<ProvinceStistics> getProvinceStisticsByDate(
         @PathVariable("date") String dateStr
     ) {
