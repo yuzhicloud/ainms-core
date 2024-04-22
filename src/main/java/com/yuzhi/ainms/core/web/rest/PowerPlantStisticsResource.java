@@ -247,9 +247,9 @@ public class PowerPlantStisticsResource {
      * @param dateStr  the date of the provinceStistics to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/byDate")
+    @GetMapping("/byDate/{dateStr}")
     public List<PowerPlantStistics> getProvinceStisticsByDate(
-        @PathVariable("date") String dateStr
+        @PathVariable("dateStr") String dateStr
     ) {
         log.debug("REST request to get ProvinceStistics By data {}", dateStr);
         LocalDate date = LocalDate.parse(dateStr);
