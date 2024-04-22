@@ -253,6 +253,7 @@ public class PowerPlantStisticsResource {
     ) {
         log.debug("REST request to get ProvinceStistics By data {}", dateStr);
         LocalDate date = LocalDate.parse(dateStr);
+        log.debug("= get power plant statistics by LocalDate is: {}", dateStr);
         return powerPlantStisticsRepository.findByDate(date);
     }
 

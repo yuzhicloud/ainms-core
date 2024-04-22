@@ -278,6 +278,7 @@ public class ProvinceStisticsResource {
     ) {
         log.debug("REST request to get ProvinceStistics By data {}", dateStr);
         LocalDate date = LocalDate.parse(dateStr);
+        log.debug("= get province statistics by LocalDate is: {}", dateStr);
         return provinceStisticsRepository.findByDate(date);
     }
 
