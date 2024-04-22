@@ -23,10 +23,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -276,7 +279,7 @@ public class ProvinceStisticsResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/byDate/{dateStr}")
-    public ResponseEntity<Page<ProvinceStistics>> getProvinceStatisticsByDate(
+    public ResponseEntity<List<ProvinceStistics>> getProvinceStatisticsByDate(
         @PathVariable("dateStr") String dateStr,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
@@ -284,7 +287,11 @@ public class ProvinceStisticsResource {
         LocalDate date = LocalDate.parse(dateStr);
         log.debug("= get province statistics by LocalDate is: {}", dateStr);
         Page<ProvinceStistics> page = provinceStisticsRepository.findByDate(date, pageable);
-        return ResponseEntity.ok().body(page);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
+            ServletUriComponentsBuilder.fromCurrentRequest(),
+            page
+        );
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**

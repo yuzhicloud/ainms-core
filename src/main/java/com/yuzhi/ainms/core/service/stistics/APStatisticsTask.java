@@ -31,8 +31,8 @@ public class APStatisticsTask {
       "T(java.time.temporal.ChronoUnit).MINUTES) * 60000}", fixedDelay = 3600000)
     public void scheduleTask() {
         log.info("APStatisticsTask.scheduleTask() called");
-        nceapService.syncAllAccessPoints();
-        accessPointService.updateAPStatisticsByProvince();
-        accessPointService.updateAPStatisticsByPowerPlant();
+//        nceapService.syncAllAccessPoints();
+//        accessPointService.updateAPStatisticsByProvince();
+//        accessPointService.updateAPStatisticsByPowerPlant();
     }
 }
