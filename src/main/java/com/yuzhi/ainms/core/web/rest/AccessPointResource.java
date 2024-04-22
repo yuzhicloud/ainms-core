@@ -291,7 +291,7 @@ public class AccessPointResource {
     */
     @GetMapping("/province-apstatistics")
     public ResponseEntity<List<ProvinceAPStatisticsDTO>> getAccessPointStatisticsByProvince() {
-        List<ProvinceAPStatisticsDTO> counts = accessPointService.getAPStatisticsByProvince();
+        List<ProvinceAPStatisticsDTO> counts = accessPointService.updateAPStatisticsByProvince();
         return ResponseEntity.ok(counts);
     }
 
@@ -300,7 +300,7 @@ public class AccessPointResource {
      */
     @GetMapping("/powerplant-apstatistics")
     public ResponseEntity<List<PowerPlantAPStatisticsDTO>> getAccessPointStatisticsByPowerPlant() {
-        List<PowerPlantAPStatisticsDTO> counts = accessPointService.getAPStatisticsByPowerPlant();
+        List<PowerPlantAPStatisticsDTO> counts = accessPointService.updateAPStatisticsByPowerPlant();
         return ResponseEntity.ok(counts);
     }
 

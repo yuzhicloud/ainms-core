@@ -32,7 +32,7 @@ public class APStatisticsTask {
     public void scheduleTask() {
         log.info("APStatisticsTask.scheduleTask() called");
         nceapService.syncAllAccessPoints();
-        accessPointService.getAPStatisticsByProvince();
-        accessPointService.getAPStatisticsByPowerPlant();
+        accessPointService.updateAPStatisticsByProvince();
+        accessPointService.updateAPStatisticsByPowerPlant();
     }
 }

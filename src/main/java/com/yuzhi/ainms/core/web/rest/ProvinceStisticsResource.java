@@ -266,6 +266,20 @@ public class ProvinceStisticsResource {
     }
 
     /**
+     * {@code GET  /province-stistics/byDate}
+     *
+     * @param id the id of the provinceStistics to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/date")
+    public List<ProvinceStistics> getProvinceStisticsByDate(
+        @PathVariable("date") String date
+    ) {
+        log.debug("REST request to get ProvinceStistics By data {}", date);
+        return provinceStisticsRepository.findByDate(date.toString());
+    }
+
+    /**
      * {@code DELETE  /province-stistics/:id} : delete the "id" provinceStistics.
      *
      * @param id the id of the provinceStistics to delete.
@@ -300,8 +314,8 @@ public class ProvinceStisticsResource {
         }catch(Exception e){
             log.error(e.getMessage());
         }
-        List<ProvinceAPStatisticsDTO> countsProvince = accessPointService.getAPStatisticsByProvince();
-        List<PowerPlantAPStatisticsDTO> countsPowerPlant = accessPointService.getAPStatisticsByPowerPlant();
+        List<ProvinceAPStatisticsDTO> countsProvince = accessPointService.updateAPStatisticsByProvince();
+        List<PowerPlantAPStatisticsDTO> countsPowerPlant = accessPointService.updateAPStatisticsByPowerPlant();
         log.debug("REST 1 request to get NEC AP statistics: {}", countsProvince);
         log.debug("REST 2 request to get NEC AP statistics: {}", countsPowerPlant);
     }

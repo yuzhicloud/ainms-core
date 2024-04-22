@@ -214,7 +214,7 @@ public class AccessPointService {
     /**
     * 根据省份来获取每个省份的AP统计情况
     */
-    public List<ProvinceAPStatisticsDTO> getAPStatisticsByProvince() {
+    public List<ProvinceAPStatisticsDTO> updateAPStatisticsByProvince() {
         log.debug("==getAPStatisticsByProvince");
         List<ProvinceAPStatisticsDTO> result = accessPointRepository.apStatisticsByProvince();
         // save to database
@@ -244,7 +244,7 @@ public class AccessPointService {
     /**
     * 根据场站来获取每个场站的AP统计情况
     */
-    public List<PowerPlantAPStatisticsDTO> getAPStatisticsByPowerPlant() {
+    public List<PowerPlantAPStatisticsDTO> updateAPStatisticsByPowerPlant() {
         List<PowerPlantAPStatisticsDTO> result = accessPointRepository.apStatisticsByPowerPlant();
         // save to database
         // change class in result to PowerPlantStistics and save
@@ -287,4 +287,5 @@ public class AccessPointService {
     private void notifyFrontend(Object message) {
         this.simpMessagingTemplate.convertAndSend("/topic/update", message);
     }
+
 }
