@@ -20,6 +20,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -273,13 +276,15 @@ public class ProvinceStisticsResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/byDate/{dateStr}")
-    public List<ProvinceStistics> getProvinceStatisticsByDate(
-        @PathVariable("dateStr") String dateStr
+    public ResponseEntity<Page<ProvinceStistics>> getProvinceStatisticsByDate(
+        @PathVariable("dateStr") String dateStr,
+        @PageableDefault(size = 30) Pageable pageable
     ) {
         log.debug("REST request to get ProvinceStistics By data {}", dateStr);
         LocalDate date = LocalDate.parse(dateStr);
         log.debug("= get province statistics by LocalDate is: {}", dateStr);
-        return provinceStisticsRepository.findByDate(date);
+        Page<ProvinceStistics> page = provinceStisticsRepository.findByDate(date, pageable);
+        return ResponseEntity.ok().body(page);
     }
 
     /**
