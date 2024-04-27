@@ -5,6 +5,7 @@ import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.P
 
 import com.yuzhi.ainms.core.security.SecurityUtils;
 import com.yuzhi.ainms.core.security.oauth2.AudienceValidator;
+import com.yuzhi.ainms.core.security.oauth2.CustomAuthorizationRequestResolver;
 import com.yuzhi.ainms.core.security.oauth2.CustomClaimConverter;
 import com.yuzhi.ainms.core.security.oauth2.JwtGrantedAuthorityConverter;
 import java.util.*;
@@ -19,13 +20,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
@@ -35,14 +36,9 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import tech.jhipster.config.JHipsterProperties;
-import tech.jhipster.web.filter.CookieCsrfFilter;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
@@ -59,32 +55,17 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
+    public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
+        return new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/login/oauth2/code/");
+    }
+
+    @Bean
+    // public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, MvcRequestMatcher.Builder mvc) throws Exception {
+
         http
             .cors(withDefaults())
             .csrf(csrf -> csrf.disable())
-//            .csrf(csrf ->
-//                csrf
-//                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-//                    // See https://stackoverflow.com/q/74447118/65681
-//                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-//            .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
-//            .addFilterAfter(new CookieCsrfFilter(), BasicAuthenticationFilter.class)
-//            .headers(
-//                headers ->
-//                    headers
-//                        .contentSecurityPolicy(csp -> csp.policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
-//                        .frameOptions(FrameOptionsConfig::sameOrigin)
-//                        .referrerPolicy(
-//                            referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-//                        )
-//                        .permissionsPolicy(
-//                            permissions ->
-//                                permissions.policy(
-//                                    "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()"
-//                                )
-//                        )
-//            )
             .authorizeHttpRequests(
                 authz ->
                     // prettier-ignore
@@ -103,14 +84,29 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/management/prometheus")).authenticated()
                     .requestMatchers(mvc.pattern("/management/**")).authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/")
+                .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
+                .authorizationEndpoint(authorizationEndpointConfig ->
+                    authorizationEndpointConfig.authorizationRequestResolver(
+                        customAuthorizationRequestResolver(clientRegistrationRepository)
+                    )
+                )
                 .successHandler(this.oauth2LoginSuccessHandler())
                 .failureHandler((request, response, exception) -> {
                     log.error("Authentication failed: " + exception.getMessage());
-                    response.sendRedirect("/?error=" + exception.getMessage()); // 自定义错误重定向
-                }))
+                    response.sendRedirect("/?error=" + exception.getMessage());
+                })
+            )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
+            // .oauth2Login(oauth2 -> oauth2.loginPage("/")
+            //             .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
+            //     .successHandler(this.oauth2LoginSuccessHandler())
+            //     .failureHandler((request, response, exception) -> {
+            //         log.error("Authentication failed: " + exception.getMessage());
+            //         response.sendRedirect("/?error=" + exception.getMessage()); // 自定义错误重定向
+            //     }))
         return http.build();
     }
 
