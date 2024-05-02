@@ -56,19 +56,16 @@ public class SecurityConfiguration {
 
     @Bean
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
-        return new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/login/oauth2/code/");
+        return new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/login/oauth2/code/oidc");
     }
 
     @Bean
-    // public SecurityFilterChain filterChain(HttpSecurity http, MvcRequestMatcher.Builder mvc) throws Exception {
     public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, MvcRequestMatcher.Builder mvc) throws Exception {
-
         http
             .cors(withDefaults())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(
                 authz ->
-                    // prettier-ignore
                 authz
                     .requestMatchers(mvc.pattern("/**")).permitAll()
                     .requestMatchers(mvc.pattern("/static/index.html")).permitAll()
@@ -90,7 +87,7 @@ public class SecurityConfiguration {
                 .authorizationEndpoint(authorizationEndpointConfig ->
                     authorizationEndpointConfig.authorizationRequestResolver(
                         customAuthorizationRequestResolver(clientRegistrationRepository)
-                    )
+                     )
                 )
                 .successHandler(this.oauth2LoginSuccessHandler())
                 .failureHandler((request, response, exception) -> {
@@ -100,13 +97,6 @@ public class SecurityConfiguration {
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
-            // .oauth2Login(oauth2 -> oauth2.loginPage("/")
-            //             .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-            //     .successHandler(this.oauth2LoginSuccessHandler())
-            //     .failureHandler((request, response, exception) -> {
-            //         log.error("Authentication failed: " + exception.getMessage());
-            //         response.sendRedirect("/?error=" + exception.getMessage()); // 自定义错误重定向
-            //     }))
         return http.build();
     }
 
@@ -176,9 +166,8 @@ public class SecurityConfiguration {
     public AuthenticationSuccessHandler oauth2LoginSuccessHandler() {
         log.debug("==start oauth2LoginSuccessHandler");
         return (request, response, authentication) -> {
-            // 在这里，我们将用户的登录状态存储在一个session属性中
+            log.debug("Authentication successful for user: {}", authentication.getName());
             request.getSession().setAttribute("loginSuccess", true);
-            // 重定向回首页
             response.sendRedirect("/");
         };
     }
