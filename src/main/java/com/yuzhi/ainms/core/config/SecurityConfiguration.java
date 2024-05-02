@@ -1,6 +1,7 @@
 package com.yuzhi.ainms.core.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
+import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.PREFERRED_USERNAME;
 
 import com.yuzhi.ainms.core.security.SecurityUtils;
@@ -56,7 +57,8 @@ public class SecurityConfiguration {
 
     @Bean
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
-        return new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/login/oauth2/code/oidc");
+        log.debug("====clinetRegistrationRepository: {}", clientRegistrationRepository.findByRegistrationId("oidc"));
+        return new CustomAuthorizationRequestResolver(clientRegistrationRepository,DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
     }
 
     @Bean

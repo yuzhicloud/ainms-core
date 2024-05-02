@@ -14,11 +14,13 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
     private final OAuth2AuthorizationRequestResolver defaultResolver;
 
     public CustomAuthorizationRequestResolver(ClientRegistrationRepository repo, String authorizationRequestBaseUri) {
+        log.debug("CustomAuthorizationRequestResolver constructor");
         this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(repo, authorizationRequestBaseUri);
     }
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+        log.debug("CustomAuthorizationRequestResolver.resolve(request called)");
         //OAuth2AuthorizationRequest authorizationRequest = defaultResolver.resolve(request);
         //return customizeAuthorizationRequest(authorizationRequest);
         try {
@@ -32,8 +34,7 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-        // OAuth2AuthorizationRequest authorizationRequest = defaultResolver.resolve(request, clientRegistrationId);
-        // return customizeAuthorizationRequest(authorizationRequest);
+        log.debug("CustomAuthorizationRequestResolver.resolve(request,clientRegistrationId) called");
         try {
             OAuth2AuthorizationRequest authorizationRequest = defaultResolver.resolve(request, clientRegistrationId);
             return customizeAuthorizationRequest(authorizationRequest);
@@ -45,9 +46,9 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     private OAuth2AuthorizationRequest customizeAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest) {
         if (authorizationRequest == null) {
+            log.debug("Authorization Request is null");
             return null;
         }
-
         log.debug("Cust Original Request: {}", authorizationRequest);
         OAuth2AuthorizationRequest newRequest = OAuth2AuthorizationRequest.from(authorizationRequest)
             //.state(authorizationRequest.getState()) // 保留原始 state
