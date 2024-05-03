@@ -8,9 +8,11 @@ import com.yuzhi.ainms.core.security.SecurityUtils;
 import com.yuzhi.ainms.core.security.oauth2.AudienceValidator;
 import com.yuzhi.ainms.core.security.oauth2.CustomAuthorizationRequestResolver;
 import com.yuzhi.ainms.core.security.oauth2.CustomClaimConverter;
+import com.yuzhi.ainms.core.security.oauth2.CustomTimestampValidator;
 import com.yuzhi.ainms.core.security.oauth2.JwtGrantedAuthorityConverter;
+
+import java.time.Duration;
 import java.util.*;
-import com.yuzhi.ainms.core.web.filter.SpaWebFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,7 +99,9 @@ public class SecurityConfiguration {
                     response.sendRedirect("/?error=" + exception.getMessage());
                 })
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
+                .decoder(jwtDecoder(clientRegistrationRepository, new RestTemplateBuilder())) 
+                .jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
         return http.build();
     }
@@ -108,6 +112,7 @@ public class SecurityConfiguration {
     }
 
     Converter<Jwt, AbstractAuthenticationToken> authenticationConverter() {
+        log.debug("==jwt converter:");
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new JwtGrantedAuthorityConverter());
         jwtAuthenticationConverter.setPrincipalClaimName(PREFERRED_USERNAME);
@@ -151,16 +156,31 @@ public class SecurityConfiguration {
 
     @Bean
     JwtDecoder jwtDecoder(ClientRegistrationRepository clientRegistrationRepository, RestTemplateBuilder restTemplateBuilder) {
+        log.debug("jwtDecoder::");
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
+        JwtTimestampValidator timestampValidator = new JwtTimestampValidator(Duration.ofSeconds(60));  // Example: 60 seconds tolerance
+        CustomTimestampValidator customTimestampValidator = new CustomTimestampValidator();
+        // Validator for audience checking
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
+        log.debug("Audience validator configured: " + audienceValidator);
+        // Validator for issuer
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-        OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+        // Combine all validators into one DelegatingOAuth2TokenValidator
+        OAuth2TokenValidator<Jwt> combinedValidators = new DelegatingOAuth2TokenValidator<>(
+            timestampValidator,
+            customTimestampValidator,
+            audienceValidator,
+            withIssuer
+        );
 
-        jwtDecoder.setJwtValidator(withAudience);
+        // Set the combined validator on the JwtDecoder
+        jwtDecoder.setJwtValidator(combinedValidators);
         jwtDecoder.setClaimSetConverter(
             new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("oidc"), restTemplateBuilder.build())
         );
+        log.debug("Finished cust jwtDecoder");
+
         return jwtDecoder;
     }
 

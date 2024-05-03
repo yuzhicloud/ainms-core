@@ -1,6 +1,10 @@
 package com.yuzhi.ainms.core.security.oauth2;
 
 import com.yuzhi.ainms.core.web.rest.ProvinceResource;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
@@ -21,8 +25,6 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         log.debug("CustomAuthorizationRequestResolver.resolve(request called)");
-        //OAuth2AuthorizationRequest authorizationRequest = defaultResolver.resolve(request);
-        //return customizeAuthorizationRequest(authorizationRequest);
         try {
             OAuth2AuthorizationRequest authorizationRequest = defaultResolver.resolve(request);
             return customizeAuthorizationRequest(authorizationRequest);
@@ -49,13 +51,16 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
             log.debug("Authorization Request is null");
             return null;
         }
-        log.debug("Cust Original Request: {}", authorizationRequest);
+        // 从请求中移除 nonce
+        Map<String, Object> additionalParameters = new HashMap<>(authorizationRequest.getAdditionalParameters());
+        additionalParameters.remove("nonce"); 
+
         OAuth2AuthorizationRequest newRequest = OAuth2AuthorizationRequest.from(authorizationRequest)
-            //.state(authorizationRequest.getState()) // 保留原始 state
-            .scope("openid", "offline_access")
+            .additionalParameters(additionalParameters)
             .state("test")
             .build();
 
+        log.debug("Cust Original Request: {}", authorizationRequest);
         log.debug("New Request: {}", newRequest);
 
         return newRequest;
