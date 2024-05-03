@@ -4,15 +4,18 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.PREFERRED_USERNAME;
 
+import com.yuzhi.ainms.core.security.*;
 import com.yuzhi.ainms.core.security.SecurityUtils;
 import com.yuzhi.ainms.core.security.oauth2.AudienceValidator;
 import com.yuzhi.ainms.core.security.oauth2.CustomAuthorizationRequestResolver;
 import com.yuzhi.ainms.core.security.oauth2.CustomClaimConverter;
 import com.yuzhi.ainms.core.security.oauth2.CustomTimestampValidator;
 import com.yuzhi.ainms.core.security.oauth2.JwtGrantedAuthorityConverter;
-
-import java.time.Duration;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.function.Supplier;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,10 +41,13 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.*;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import org.springframework.util.StringUtils;
 import tech.jhipster.config.JHipsterProperties;
+import tech.jhipster.web.filter.CookieCsrfFilter;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
@@ -67,7 +73,13 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, MvcRequestMatcher.Builder mvc) throws Exception {
         http
             .cors(withDefaults())
-            .csrf(csrf -> csrf.disable())
+            .csrf(
+                csrf ->
+                    csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+            )
+            .addFilterAfter(new CookieCsrfFilter(), BasicAuthenticationFilter.class)
             .authorizeHttpRequests(
                 authz ->
                 authz
@@ -85,22 +97,19 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/management/prometheus")).authenticated()
                     .requestMatchers(mvc.pattern("/management/**")).authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/")
-                .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
+            .oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
                 .authorizationEndpoint(authorizationEndpointConfig ->
                     authorizationEndpointConfig.authorizationRequestResolver(
                         customAuthorizationRequestResolver(clientRegistrationRepository)
                      )
                 )
-                .successHandler(this.oauth2LoginSuccessHandler())
                 .failureHandler((request, response, exception) -> {
                     log.error("Authentication failed: " + exception.getMessage());
                     response.sendRedirect("/?error=" + exception.getMessage());
                 })
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                .decoder(jwtDecoder(clientRegistrationRepository, new RestTemplateBuilder())) 
+                .decoder(jwtDecoder(clientRegistrationRepository, new RestTemplateBuilder()))
                 .jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
         return http.build();
@@ -184,13 +193,44 @@ public class SecurityConfiguration {
         return jwtDecoder;
     }
 
-    @Bean
-    public AuthenticationSuccessHandler oauth2LoginSuccessHandler() {
-        log.debug("==start oauth2LoginSuccessHandler");
-        return (request, response, authentication) -> {
-            log.debug("Authentication successful for user: {}", authentication.getName());
-            request.getSession().setAttribute("loginSuccess", true);
-            response.sendRedirect("/");
-        };
+    /**
+     * Custom CSRF handler to provide BREACH protection.
+     *
+     * @see <a href="https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa">Spring Security Documentation - Integrating with CSRF Protection</a>
+     * @see <a href="https://github.com/jhipster/generator-jhipster/pull/25907">JHipster - use customized SpaCsrfTokenRequestHandler to handle CSRF token</a>
+     * @see <a href="https://stackoverflow.com/q/74447118/65681">CSRF protection not working with Spring Security 6</a>
+     */
+    static final class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler {
+
+        private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();
+
+        @Override
+        public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken) {
+            /*
+             * Always use XorCsrfTokenRequestAttributeHandler to provide BREACH protection of
+             * the CsrfToken when it is rendered in the response body.
+             */
+            this.delegate.handle(request, response, csrfToken);
+        }
+
+        @Override
+        public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
+            /*
+             * If the request contains a request header, use CsrfTokenRequestAttributeHandler
+             * to resolve the CsrfToken. This applies when a single-page application includes
+             * the header value automatically, which was obtained via a cookie containing the
+             * raw CsrfToken.
+             */
+            if (StringUtils.hasText(request.getHeader(csrfToken.getHeaderName()))) {
+                return super.resolveCsrfTokenValue(request, csrfToken);
+            }
+            /*
+             * In all other cases (e.g. if the request contains a request parameter), use
+             * XorCsrfTokenRequestAttributeHandler to resolve the CsrfToken. This applies
+             * when a server-side rendered form includes the _csrf request parameter as a
+             * hidden input.
+             */
+            return this.delegate.resolveCsrfTokenValue(request, csrfToken);
+        }
     }
 }
