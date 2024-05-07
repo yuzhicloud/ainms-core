@@ -4,13 +4,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.PREFERRED_USERNAME;
 
-import com.yuzhi.ainms.core.security.*;
 import com.yuzhi.ainms.core.security.SecurityUtils;
-import com.yuzhi.ainms.core.security.oauth2.AudienceValidator;
-import com.yuzhi.ainms.core.security.oauth2.CustomAuthorizationRequestResolver;
-import com.yuzhi.ainms.core.security.oauth2.CustomClaimConverter;
-import com.yuzhi.ainms.core.security.oauth2.CustomTimestampValidator;
-import com.yuzhi.ainms.core.security.oauth2.JwtGrantedAuthorityConverter;
+import com.yuzhi.ainms.core.security.oauth2.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -23,11 +18,16 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -35,6 +35,8 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
@@ -44,6 +46,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.*;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import org.springframework.util.StringUtils;
 import tech.jhipster.config.JHipsterProperties;
@@ -61,6 +64,23 @@ public class SecurityConfiguration {
 
     public SecurityConfiguration(JHipsterProperties jHipsterProperties) {
         this.jHipsterProperties = jHipsterProperties;
+    }
+
+    @Bean
+    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient(){
+        DefaultAuthorizationCodeTokenResponseClient accessTokenResponseClient =
+            new DefaultAuthorizationCodeTokenResponseClient();
+        // accessTokenResponseClient.setRequestEntityConverter(new CustomRequestEntityConverter());
+        OAuth2AccessTokenResponseHttpMessageConverter tokenResponseHttpMessageConverter =
+            new OAuth2AccessTokenResponseHttpMessageConverter();
+        tokenResponseHttpMessageConverter.setAccessTokenResponseConverter(new CustomTokenResponseConverter());
+
+        RestTemplate restTemplate = new RestTemplate(Arrays.asList(
+            new FormHttpMessageConverter(),
+            tokenResponseHttpMessageConverter));
+        restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+        accessTokenResponseClient.setRestOperations(restTemplate);
+        return accessTokenResponseClient;
     }
 
     @Bean
@@ -109,7 +129,6 @@ public class SecurityConfiguration {
                 })
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                .decoder(jwtDecoder(clientRegistrationRepository, new RestTemplateBuilder()))
                 .jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
         return http.build();
@@ -134,11 +153,22 @@ public class SecurityConfiguration {
         final OidcUserService delegate = new OidcUserService();
 
         return userRequest -> {
+            log.debug("Fetching user info from {}", userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri());
             OidcUser oidcUser = delegate.loadUser(userRequest);
+            //customizing the OidcUser token
+            OidcIdToken idToken = userRequest.getIdToken();
+            validateCustomClaims(idToken);
             return new DefaultOidcUser(oidcUser.getAuthorities(), oidcUser.getIdToken(), oidcUser.getUserInfo(), PREFERRED_USERNAME);
         };
     }
 
+    private void validateCustomClaims(OidcIdToken idToken) {
+        String someClaim = idToken.getClaimAsString("iat");
+        log.debug("Custom claim iat: {}", someClaim);
+        /*if (someClaim == null || !someClaim.equals("expected_value")) {
+            throw new AuthenticationException("Invalid ID Token: Expected custom claim not found.") {};
+        }*/
+    }
     /**
      * Map authorities from "groups" or "roles" claim in ID Token.
      *
@@ -169,7 +199,6 @@ public class SecurityConfiguration {
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
         JwtTimestampValidator timestampValidator = new JwtTimestampValidator(Duration.ofSeconds(60));  // Example: 60 seconds tolerance
-        CustomTimestampValidator customTimestampValidator = new CustomTimestampValidator();
         // Validator for audience checking
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(jHipsterProperties.getSecurity().getOauth2().getAudience());
         log.debug("Audience validator configured: " + audienceValidator);
@@ -178,7 +207,6 @@ public class SecurityConfiguration {
         // Combine all validators into one DelegatingOAuth2TokenValidator
         OAuth2TokenValidator<Jwt> combinedValidators = new DelegatingOAuth2TokenValidator<>(
             timestampValidator,
-            customTimestampValidator,
             audienceValidator,
             withIssuer
         );
