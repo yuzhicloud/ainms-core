@@ -45,7 +45,11 @@ public class PowerPlantWithProvinceDTO {
     }
 
     public Long getPowerPlantId() {
-        return powerPlantId;
+        return this.powerPlantId;
+    }
+
+    public String getPowerPlantName(){
+        return this.powerPlantName;
     }
 
     public void setPowerPlantId(Long powerPlantId) {

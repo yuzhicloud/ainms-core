@@ -14,7 +14,7 @@
 # ===================================================================
 cas:
   server:
-    address: 10.170.248.35
+    address: 10.170.69.214
 
 logging:
   level:
@@ -22,8 +22,8 @@ logging:
     tech.jhipster: DEBUG
     org.hibernate.SQL: DEBUG
     com.yuzhi.ainms.core: DEBUG
-#    org.springframework.security: DEBUG
-#    org.springframework.web.socket: DEBUG
+    org.springframework.security: TRACE
+    org.springframework.web.socket: DEBUG
 
 spring:
   devtools:
@@ -37,7 +37,7 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://localhost:13306/ainms?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://10.170.248.35:13306/ainms?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
     password: RootPassword123!
     hikari:

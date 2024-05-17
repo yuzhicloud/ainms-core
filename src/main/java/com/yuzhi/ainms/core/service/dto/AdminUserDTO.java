@@ -29,6 +29,8 @@ public class AdminUserDTO implements Serializable {
 
     private Long provinceId;
 
+    private Long plantId;
+
     @Size(min = 5, max = 254)
     private String email;
 
@@ -60,6 +62,7 @@ public class AdminUserDTO implements Serializable {
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.provinceId = user.getProvinceId();
+        this.plantId = user.getPlantId();
         this.email = user.getEmail();
         this.activated = user.isActivated();
         this.imageUrl = user.getImageUrl();
@@ -110,6 +113,10 @@ public class AdminUserDTO implements Serializable {
     public void setProvinceId(Long provinceId) {
         this.provinceId = provinceId;
     }
+
+    public Long getPlantId() { return  plantId;}
+
+    public void setPlantId(Long plantId) { this.plantId = plantId;}
 
     public String getEmail() {
         return email;
@@ -193,6 +200,7 @@ public class AdminUserDTO implements Serializable {
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", provinceId=" + provinceId +
+            ", plantId=" + plantId +
             ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", activated=" + activated +

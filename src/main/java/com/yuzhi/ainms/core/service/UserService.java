@@ -65,6 +65,7 @@ public class UserService {
         user.setResetDate(Instant.now());
         user.setActivated(true);
         user.setProvinceId(userDTO.getProvinceId());
+        user.setPlantId(userDTO.getPlantId());
         if (userDTO.getAuthorities() != null) {
             Set<Authority> authorities = userDTO
                 .getAuthorities()
@@ -103,6 +104,7 @@ public class UserService {
                 user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
                 user.setProvinceId(userDTO.getProvinceId());
+                user.setPlantId(userDTO.getPlantId());
                 Set<Authority> managedAuthorities = user.getAuthorities();
                 managedAuthorities.clear();
                 userDTO

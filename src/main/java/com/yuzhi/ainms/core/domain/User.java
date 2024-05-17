@@ -47,6 +47,9 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Column(name = "province_id")
     private Long provinceId;
 
+    @Column(name = "plant_id")
+    private Long plantId;
+
     @Email
     @Size(min = 0, max = 254)
     @Column(length = 254, unique = true)
@@ -134,6 +137,10 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     public void setProvinceId(Long provinceCode) {
         this.provinceId = provinceCode;
     }
+
+    public Long getPlantId() { return  plantId;}
+
+    public void setPlantId(Long plantId) { this.plantId = plantId;}
 
     public String getEmail() {
         return email;
@@ -225,6 +232,7 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", provinceCode=" + provinceId +
+            ", plantCode=" + plantId +
             ", email='" + email + '\'' +
             ", activated=" + activated +
             ", langKey='" + langKey + '\'' +

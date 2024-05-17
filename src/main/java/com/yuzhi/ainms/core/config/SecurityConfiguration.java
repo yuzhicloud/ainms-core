@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.function.Supplier;
 import java.time.Duration;
+
+//import org.graalvm.compiler.core.gen.DebugInfoBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,10 +64,16 @@ public class SecurityConfiguration {
     @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
     private String issuerUri;
 
+    @Value("${spring.security.oauth2.client.provider.oidc.jwk-set-uri}")
+    private String jwksetUri;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
+    private String audience;
+
     public SecurityConfiguration(JHipsterProperties jHipsterProperties) {
         this.jHipsterProperties = jHipsterProperties;
     }
-
+/*
     @Bean
     public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient(){
         DefaultAuthorizationCodeTokenResponseClient accessTokenResponseClient =
@@ -82,7 +90,7 @@ public class SecurityConfiguration {
         accessTokenResponseClient.setRestOperations(restTemplate);
         return accessTokenResponseClient;
     }
-
+*/
     @Bean
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
         log.debug("====clinetRegistrationRepository: {}", clientRegistrationRepository.findByRegistrationId("oidc"));
@@ -117,7 +125,9 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/management/prometheus")).authenticated()
                     .requestMatchers(mvc.pattern("/management/**")).authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/")
+                .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
                 .authorizationEndpoint(authorizationEndpointConfig ->
                     authorizationEndpointConfig.authorizationRequestResolver(
                         customAuthorizationRequestResolver(clientRegistrationRepository)
@@ -129,7 +139,9 @@ public class SecurityConfiguration {
                 })
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                .jwtAuthenticationConverter(authenticationConverter())))
+                .jwtAuthenticationConverter(authenticationConverter())
+                .decoder(jwtDecoder())
+            ))
             .oauth2Client(withDefaults());
         return http.build();
     }
@@ -175,6 +187,7 @@ public class SecurityConfiguration {
      * @return a {@link GrantedAuthoritiesMapper} that maps groups from
      * the IdP to Spring Security Authorities.
      */
+    /*
     @Bean
     public GrantedAuthoritiesMapper userAuthoritiesMapper() {
         log.debug("====start userAuthoritiesMapper");
@@ -193,10 +206,13 @@ public class SecurityConfiguration {
         };
     }
 
+     */
+
     @Bean
-    JwtDecoder jwtDecoder(ClientRegistrationRepository clientRegistrationRepository, RestTemplateBuilder restTemplateBuilder) {
+    JwtDecoder jwtDecoder() {
         log.debug("jwtDecoder::");
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
+
 
         JwtTimestampValidator timestampValidator = new JwtTimestampValidator(Duration.ofSeconds(60));  // Example: 60 seconds tolerance
         // Validator for audience checking
@@ -213,12 +229,19 @@ public class SecurityConfiguration {
 
         // Set the combined validator on the JwtDecoder
         jwtDecoder.setJwtValidator(combinedValidators);
+        /*
+        ClientRegistrationRepository clientRegistrationRepository;
+        DebugInfoBuilder restTemplateBuilder;
         jwtDecoder.setClaimSetConverter(
             new CustomClaimConverter(clientRegistrationRepository.findByRegistrationId("oidc"), restTemplateBuilder.build())
         );
+
+         */
         log.debug("Finished cust jwtDecoder");
 
         return jwtDecoder;
+
+
     }
 
     /**

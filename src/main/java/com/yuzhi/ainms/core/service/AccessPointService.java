@@ -7,6 +7,7 @@ import com.yuzhi.ainms.core.domain.ProvinceStistics;
 import com.yuzhi.ainms.core.repository.*;
 
 import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -192,6 +193,26 @@ public class AccessPointService {
         List<Long> powerPlantIds = powerPlantRepository.findAllByProvinceId(provinceId).stream()
             .map(PowerPlantWithProvinceDTO::getPowerPlantId)
             .collect(Collectors.toList());
+        log.debug("==Request2 to findAllAccessPointsByProvinceId, powerPlantIds: {}", powerPlantIds.toString());
+        // 使用IN查询一次性获取所有这些PowerPlant下的AccessPointGroup的ID
+        List<Long> accessPointGroupIds = accessPointGroupRepository.findByPowerPlantIdIn(powerPlantIds).stream()
+            .map(AccessPointGroup::getId)
+            .collect(Collectors.toList());
+
+        log.debug("==Request3 to findAllAccessPointsByProvinceId, accessPointGroupIds: {}", accessPointGroupIds.toString());
+        Page<AccessPoint> accessPoints = accessPointRepository.findByGroupIdsIn(accessPointGroupIds, pageable);
+        return accessPoints;
+    }
+
+    public Page<AccessPoint> findAllAccessPointsByPlantId(Long plantId, Pageable  pageable){
+        // 一次性获取省份下的所有PowerPlant的ID
+       // log.debug("==Request1 to findAllAccessPointsByProvinceId, provinceId: {}", provinceId);
+       // List<Long> powerPlantIds = powerPlantRepository.findAllByProvinceId(provinceId).stream()
+       //     .map(PowerPlantWithProvinceDTO::getPowerPlantId)
+       //     .collect(Collectors.toList());
+        List<Long> powerPlantIds = new ArrayList<>();
+        powerPlantIds.add(plantId);
+
         log.debug("==Request2 to findAllAccessPointsByProvinceId, powerPlantIds: {}", powerPlantIds.toString());
         // 使用IN查询一次性获取所有这些PowerPlant下的AccessPointGroup的ID
         List<Long> accessPointGroupIds = accessPointGroupRepository.findByPowerPlantIdIn(powerPlantIds).stream()

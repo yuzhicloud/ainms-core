@@ -129,7 +129,7 @@ public class UserResource {
         @Valid @RequestBody AdminUserDTO userDTO
     ) {
         log.debug("REST request to update User : {}", userDTO);
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
+       // Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
 
         Optional<AdminUserDTO> updatedUser = userService.updateUser(userDTO);
 

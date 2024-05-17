@@ -2,6 +2,7 @@ package com.yuzhi.ainms.core.web.rest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.yuzhi.ainms.core.domain.User;
+import com.yuzhi.ainms.core.repository.PowerPlantRepository;
 import com.yuzhi.ainms.core.repository.ProvinceRepository;
 import com.yuzhi.ainms.core.repository.UserRepository;
 import com.yuzhi.ainms.core.service.ProvinceService;
@@ -45,11 +46,14 @@ public class AccountResource {
 
     private final ProvinceRepository provinceRepository;
 
-    public AccountResource(UserService userService, ProvinceService provinceService, UserRepository userRepository, ProvinceRepository provinceRepository) {
+    private final PowerPlantRepository plantRepository;
+
+    public AccountResource(UserService userService, ProvinceService provinceService, UserRepository userRepository, ProvinceRepository provinceRepository, PowerPlantRepository plantRepository) {
         this.userService = userService;
         this.provinceService = provinceService;
         this.userRepository = userRepository;
         this.provinceRepository = provinceRepository;
+        this.plantRepository = plantRepository;
     }
 
     @Override
@@ -103,12 +107,14 @@ public class AccountResource {
         private String login;
         private Set<String> authorities;
         private Long provinceId;
+        private Long plantId;
 
         @JsonCreator
-        UserVM(String login, Set<String> authorities, Long provinceId) {
+        UserVM(String login, Set<String> authorities, Long provinceId, Long plantId) {
             this.login = login;
             this.authorities = authorities;
             this.provinceId = provinceId;
+            this.plantId = plantId;
         }
 
         public boolean isActivated() {
@@ -124,6 +130,7 @@ public class AccountResource {
         public Long getProvinceId() {
             return provinceId;
         }
+        public Long getPlantId() { return plantId; }
     }
 
     private UserVM getUserFromAuthentication(AbstractAuthenticationToken authToken) {
@@ -137,6 +144,13 @@ public class AccountResource {
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.toSet());
         log.debug("default login &&defaultAuthorities from sso::" + login + "::" + defaultAuthorities);
+
+        //删除login中的分隔符
+        int delimiterIndex = login.indexOf("|"); // 找到 "|" 的位置
+        if (delimiterIndex != -1) { // 确保 "|" 存在于字符串中
+            login = login.substring(0, delimiterIndex); // 提取 "|" 之前的内容
+        }
+
         //获取从SSO传过来的工号/用户名,然后通过工号/用户名查找本地用户的所有信息
         Optional<User> user = userService.getUserWithAuthoritiesByLogin(login.toLowerCase());
 
@@ -151,17 +165,19 @@ public class AccountResource {
             adminUserDTO.setLogin(login.toLowerCase());
             //给用户赋予省份,1501为默认的总公司，同时赋予默认权限
             adminUserDTO.setProvinceId(1501L);
+            adminUserDTO.setPlantId(0L);
+            adminUserDTO.setLangKey("zh-cn");
             Set<String> authorities = new HashSet<>(Collections.singleton("ROLE_USER"));
             adminUserDTO.setAuthorities(authorities);
             User newUser = userService.createUser(adminUserDTO);
         }
 
-        UserVM userVM = new UserVM(adminUserDTO.getLogin(), adminUserDTO.getAuthorities(), adminUserDTO.getProvinceId());
+        UserVM userVM = new UserVM(adminUserDTO.getLogin(), adminUserDTO.getAuthorities(), adminUserDTO.getProvinceId(), adminUserDTO.getPlantId());
         //double check;所有用户都赋予user权限，通过判断省份来查看本省的设备
         //double check,判断userVM的权限是否包含ROLE_USER,如果不包含则添加
-        userVM.getAuthorities().add("ROLE_USER");
-        log.debug("userVM has been created:" + userVM.getLogin().toString()
-            +":"+userVM.getAuthorities().toString() + ":" + userVM.getProvinceId());
+        // userVM.getAuthorities().add("ROLE_USER");
+        //log.debug("userVM has been created:" + userVM.getLogin().toString()
+        //    +":"+userVM.getAuthorities().toString() + ":" + userVM.getProvinceId());
         return userVM;
     }
 }

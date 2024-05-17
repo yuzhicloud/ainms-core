@@ -154,37 +154,42 @@ spring:
     ansi:
       console-available: true
 
-  security:
-    oauth2:
-       client:
-         provider:
-           oidc:
-             issuer-uri: http://10.170.248.35:9090/realms/jhipster
-         registration:
-           oidc:
-             client-id: web_app
-             client-secret: web_app
-             scope: openid, profile, email, offline_access # last one for refresh tokens
-
 #  security:
 #    oauth2:
-#      client:
-#        registration:
-#          oidc:
-#            client-name: WXTYJK
-#            client-id: WXTYJK
-#            client-secret: secret
-#            authorization-grant-type: authorization_code
-#            redirect-uri: http://192.168.22.5:9000/login/oauth2/code/oidc
-#            scope: openid, profile, email, offline_access
-##            client-authentication-method: client_secret_basic
-#        provider:
-#          oidc:
-#            issuer-uri: http://${cas.server.address}:9080/cas/oidc
-#            authorization-uri: http://${cas.server.address}:9080/cas/oidc/authorize
-#            token-uri: http://${cas.server.address}:9080/cas/oidc/token
-#            user-info-uri: http://${cas.server.address}:9080/cas/oidc/profile
-#            jwk-set-uri: http://${cas.server.address}:9080/cas/oidc/jwks
+#       client:
+#         provider:
+#           oidc:
+#             issuer-uri: http://10.170.248.35:9090/realms/jhipster
+#         registration:
+#           oidc:
+#             client-id: web_app
+#             client-secret: web_app
+#             scope: openid, profile, email, offline_access # last one for refresh tokens
+
+  security:
+    oauth2:
+      client:
+        registration:
+          oidc:
+            client-name: WXTYJK
+            client-id: 70ZSXT
+            client-secret: secret
+            authorization-grant-type: authorization_code
+            redirect-uri: http://10.170.43.59:9000/login/oauth2/code/{registrationId}
+            #scope: openid, profile, email, offline_access
+            scope: openid, offline_access
+            #client-authentication-method: client_secret_basic
+        provider:
+          oidc:
+            issuer-uri: http://${cas.server.address}:8080/cas/oidc/
+            authorization-uri: http://${cas.server.address}:8080/cas/oidc/authorize
+            token-uri: http://${cas.server.address}:8080/cas/oidc/token
+            user-info-uri: http://${cas.server.address}:8080/cas/oidc/profile
+            jwk-set-uri: http://${cas.server.address}:8080/cas/oidc/jwks
+      resourceserver:
+        jwt:
+          issuer-uri: http://${cas.server.address}:8080/cas/oidc/
+          audience: 70ZSXT
 
 server:
   servlet:
@@ -234,8 +239,8 @@ jhipster:
   security:
     oauth2:
       audience:
-        - account
-        - api://default
+        - WXTYJK
+        - 70ZSXT
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

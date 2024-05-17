@@ -277,6 +277,16 @@ public class AccessPointResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/powerplant/{id}")
+    public ResponseEntity<List<AccessPoint>> getAllAccessPointsByPlantId(
+        @PathVariable("id") @Parameter(description = "Province ID") Long plantId,
+        @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+       // log.debug("REST request to get a page of AccessPoints by Province ID" + provinceId);
+        Page<AccessPoint> page = accessPointService.findAllAccessPointsByPlantId(plantId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
     /**
     * Get all the accessPoints by provinceName.
     */
