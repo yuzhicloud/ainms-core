@@ -285,15 +285,16 @@ public class ProvinceStisticsResource {
      * @param dateStr  the date of the provinceStistics to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/byDate/{dateStr}")
+    @GetMapping("/byDate")
     public ResponseEntity<List<ProvinceStistics>> getProvinceStatisticsByDate(
-        @PathVariable("dateStr") String dateStr,
+        @RequestParam(name = "startdate") String startdate, @RequestParam(name="enddate") String enddate,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get ProvinceStistics By data {}", dateStr);
-        LocalDate date = LocalDate.parse(dateStr);
-        log.debug("= get province statistics by LocalDate is: {}", dateStr);
-        Page<ProvinceStistics> page = provinceStisticsRepository.findByDate(date, pageable);
+       // log.debug("REST request to get ProvinceStistics By data {}", dateStr);
+        LocalDate start = LocalDate.parse(startdate);
+        LocalDate end = LocalDate.parse(enddate);
+       // log.debug("= get province statistics by LocalDate is: {}", dateStr);
+        Page<ProvinceStistics> page = provinceStisticsRepository.findByDate(start, end, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
             ServletUriComponentsBuilder.fromCurrentRequest(),
             page
@@ -349,8 +350,13 @@ public class ProvinceStisticsResource {
      * @throws IOException
      */
     @GetMapping("/download-csv")
-    public ResponseEntity<Resource> downloadCsv() throws IOException {
-        Path path = apStatisticsService.createCsvFileByProvince();
+    public ResponseEntity<Resource> downloadCsv(
+        @RequestParam(name = "start") String startdate, @RequestParam(name="end") String enddate
+    ) throws IOException {
+        LocalDate start = LocalDate.parse(startdate);
+        LocalDate end = LocalDate.parse(enddate);
+
+        Path path = apStatisticsService.createCsvFileByProvince(start, end);
         Resource resource = new PathResource(path);
         String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
             .path("/api/province-stistics/download-csv")

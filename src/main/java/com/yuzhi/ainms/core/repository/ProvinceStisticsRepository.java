@@ -16,6 +16,8 @@ import java.util.List;
 @Repository
 public interface ProvinceStisticsRepository
   extends JpaRepository<ProvinceStistics, Long> {
-    @Query("select p from ProvinceStistics p where p.statisticDate= ?1")
-    Page<ProvinceStistics> findByDate(LocalDate date, Pageable pageable);
+    @Query("select p from ProvinceStistics p where p.statisticDate>= ?1 and p.statisticDate<= ?2")
+    Page<ProvinceStistics> findByDate(LocalDate start, LocalDate end, Pageable pageable);
+
+    List<ProvinceStistics> findAllByStatisticDateBetween(LocalDate start, LocalDate end);
 }

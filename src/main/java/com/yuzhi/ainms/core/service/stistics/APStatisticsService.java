@@ -19,6 +19,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -56,8 +57,8 @@ public class APStatisticsService {
      * @return
      * @throws IOException
      */
-    public Path createCsvFileByProvince() throws IOException {
-        List<ProvinceStistics> records = provinceStisticsRepository.findAll();
+    public Path createCsvFileByProvince(LocalDate start, LocalDate end) throws IOException {
+        List<ProvinceStistics> records = provinceStisticsRepository.findAllByStatisticDateBetween(start, end);
         LocalDateTime now = LocalDateTime.now();
         String timestamp = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String fileName = "statisticsByProvince_" + timestamp + ".csv";
@@ -89,8 +90,10 @@ public class APStatisticsService {
      * @return
      * @throws IOException
      */
-    public Path createCsvFileByPowerPlant() throws IOException {
-        List<PowerPlantStistics> records = powerPlantStisticsRepository.findAll();
+    public Path createCsvFileByPowerPlant(
+        LocalDate start, LocalDate end
+    ) throws IOException {
+        List<PowerPlantStistics> records = powerPlantStisticsRepository.findAllByStatisticDateBetween(start, end);
         LocalDateTime now = LocalDateTime.now();
         String timestamp = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         String fileName = "statisticsByProvince_" + timestamp + ".csv";

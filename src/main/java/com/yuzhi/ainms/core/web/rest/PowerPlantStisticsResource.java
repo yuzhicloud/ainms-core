@@ -18,6 +18,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -259,15 +260,16 @@ public class PowerPlantStisticsResource {
      * @param dateStr  the date of the provinceStistics to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the provinceStistics, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/byDate/{dateStr}")
+    @GetMapping("/byDate")
     public ResponseEntity<List<PowerPlantStistics>> getProvinceStisticsByDate(
-        @PathVariable("dateStr") String dateStr,
+        @RequestParam(name="startdate") String startDate, @RequestParam(name="enddate") String endDate,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        log.debug("REST request to get ProvinceStistics By data {}", dateStr);
-        LocalDate date = LocalDate.parse(dateStr);
-        log.debug("= get power plant statistics by LocalDate is: {}", dateStr);
-        Page<PowerPlantStistics> page = powerPlantStisticsRepository.findByDate(date, pageable);
+        //log.debug("REST request to get ProvinceStistics By data {}", dateStr);
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        //log.debug("= get power plant statistics by LocalDate is: {}", dateStr);
+        Page<PowerPlantStistics> page = powerPlantStisticsRepository.findByDate(start, end, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
             ServletUriComponentsBuilder.fromCurrentRequest(),
             page
@@ -322,8 +324,13 @@ public class PowerPlantStisticsResource {
      * @throws IOException
      */
     @GetMapping("/download-csv")
-    public ResponseEntity<Resource> downloadCsv() throws IOException {
-        Path path = apStatisticsService.createCsvFileByPowerPlant();
+    public ResponseEntity<Resource> downloadCsv(
+        @RequestParam(name = "start") String startdate, @RequestParam(name="end") String enddate
+    ) throws IOException {
+        LocalDate start = LocalDate.parse(startdate);
+        LocalDate end = LocalDate.parse(enddate);
+
+        Path path = apStatisticsService.createCsvFileByPowerPlant(start, end);
         Resource resource = new PathResource(path);
         String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
             .path("/api/power-plant-stistics/download-csv")
