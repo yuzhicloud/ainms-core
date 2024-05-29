@@ -208,10 +208,16 @@ public class AccessPointResource {
      */
     @GetMapping("")
     public ResponseEntity<List<AccessPoint>> getAllAccessPoints(
+        @RequestParam(name="key") String key,
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         log.debug("REST request to get a page of AccessPoints");
-        Page<AccessPoint> page = accessPointService.findAll(pageable);
+        Page<AccessPoint> page;
+        if(key != null && !key.isEmpty()) {
+            page = accessPointService.findAllAccessPointsByPlantName(key, 0L, 0L, pageable);
+        }else {
+             page = accessPointService.findAll(pageable);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
             ServletUriComponentsBuilder.fromCurrentRequest(),
             page
@@ -270,9 +276,15 @@ public class AccessPointResource {
     })
     public ResponseEntity<List<AccessPoint>> getAllAccessPointsByProvinceId(
         @PathVariable("id") @Parameter(description = "Province ID") Long provinceId,
+        @RequestParam(name="key") String key,
         @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
         log.debug("REST request to get a page of AccessPoints by Province ID" + provinceId);
-        Page<AccessPoint> page = accessPointService.findAllAccessPointsByProvinceId(provinceId, pageable);
+        Page<AccessPoint> page;
+        if(key != null && !key.isEmpty()) {
+            page = accessPointService.findAllAccessPointsByPlantName(key, provinceId, 0L, pageable);
+        }else {
+             page = accessPointService.findAllAccessPointsByProvinceId(provinceId,  pageable);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -280,9 +292,16 @@ public class AccessPointResource {
     @GetMapping("/powerplant/{id}")
     public ResponseEntity<List<AccessPoint>> getAllAccessPointsByPlantId(
         @PathVariable("id") @Parameter(description = "Province ID") Long plantId,
+        @RequestParam(name="key") String key,
         @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
        // log.debug("REST request to get a page of AccessPoints by Province ID" + provinceId);
-        Page<AccessPoint> page = accessPointService.findAllAccessPointsByPlantId(plantId, pageable);
+        Page<AccessPoint> page;
+        if(key != null && !key.isEmpty()) {
+            page = accessPointService.findAllAccessPointsByPlantName(key, 0L, plantId, pageable);
+        }else{
+            page = accessPointService.findAllAccessPointsByPlantId(plantId, pageable);
+        }
+
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

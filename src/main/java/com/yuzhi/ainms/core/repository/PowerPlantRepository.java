@@ -28,4 +28,10 @@ public interface PowerPlantRepository extends JpaRepository<PowerPlant, Long> {
         "JOIN g.powerPlant p " +
         "GROUP BY p.province.id, p.province.provinceName")
     List<ProvinceAccessPointCountDTO> countAccessPointsByProvince();
+
+    List<PowerPlant> findAllByPowerPlantNameContaining(String powerPlantName);
+
+    List<PowerPlant> findAllByProvinceIdAndPowerPlantNameContaining(Long provinceId, String powerPlantName);
+
+    List<PowerPlant> findAllByIdAndPowerPlantNameContaining(Long Id, String powerPlantName);
 }

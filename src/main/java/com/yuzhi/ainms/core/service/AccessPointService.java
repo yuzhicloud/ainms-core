@@ -1,9 +1,6 @@
 package com.yuzhi.ainms.core.service;
 
-import com.yuzhi.ainms.core.domain.AccessPoint;
-import com.yuzhi.ainms.core.domain.AccessPointGroup;
-import com.yuzhi.ainms.core.domain.PowerPlantStistics;
-import com.yuzhi.ainms.core.domain.ProvinceStistics;
+import com.yuzhi.ainms.core.domain.*;
 import com.yuzhi.ainms.core.repository.*;
 
 import java.time.*;
@@ -154,7 +151,7 @@ public class AccessPointService {
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<AccessPoint> findAll(Pageable pageable) {
+    public Page<AccessPoint> findAll( Pageable pageable) {
         log.debug("Request to get all AccessPoints");
         return accessPointRepository.findAll(pageable);
     }
@@ -187,7 +184,7 @@ public class AccessPointService {
      * @param provinceId 省份的ID。
      * @return 相关的AccessPoint列表。
      */
-    public Page<AccessPoint> findAllAccessPointsByProvinceId(Long provinceId, Pageable  pageable){
+    public Page<AccessPoint> findAllAccessPointsByProvinceId(Long provinceId,  Pageable  pageable){
         // 一次性获取省份下的所有PowerPlant的ID
         log.debug("==Request1 to findAllAccessPointsByProvinceId, provinceId: {}", provinceId);
         List<Long> powerPlantIds = powerPlantRepository.findAllByProvinceId(provinceId).stream()
@@ -204,7 +201,7 @@ public class AccessPointService {
         return accessPoints;
     }
 
-    public Page<AccessPoint> findAllAccessPointsByPlantId(Long plantId, Pageable  pageable){
+    public Page<AccessPoint> findAllAccessPointsByPlantId(Long plantId,  Pageable  pageable){
         // 一次性获取省份下的所有PowerPlant的ID
        // log.debug("==Request1 to findAllAccessPointsByProvinceId, provinceId: {}", provinceId);
        // List<Long> powerPlantIds = powerPlantRepository.findAllByProvinceId(provinceId).stream()
@@ -212,6 +209,37 @@ public class AccessPointService {
        //     .collect(Collectors.toList());
         List<Long> powerPlantIds = new ArrayList<>();
         powerPlantIds.add(plantId);
+
+        log.debug("==Request2 to findAllAccessPointsByProvinceId, powerPlantIds: {}", powerPlantIds.toString());
+        // 使用IN查询一次性获取所有这些PowerPlant下的AccessPointGroup的ID
+        List<Long> accessPointGroupIds = accessPointGroupRepository.findByPowerPlantIdIn(powerPlantIds).stream()
+            .map(AccessPointGroup::getId)
+            .collect(Collectors.toList());
+
+        log.debug("==Request3 to findAllAccessPointsByProvinceId, accessPointGroupIds: {}", accessPointGroupIds.toString());
+        Page<AccessPoint> accessPoints = accessPointRepository.findByGroupIdsIn(accessPointGroupIds, pageable);
+        return accessPoints;
+    }
+
+    public Page<AccessPoint> findAllAccessPointsByPlantName(String plantName, Long provinceid, Long powerplantid,  Pageable  pageable){
+        // 一次性获取省份下的所有PowerPlant的ID
+        // log.debug("==Request1 to findAllAccessPointsByProvinceId, provinceId: {}", provinceId);
+        List<PowerPlant> powerPlants = new ArrayList<>();
+        if(provinceid > 0){
+            powerPlants = powerPlantRepository.findAllByProvinceIdAndPowerPlantNameContaining(provinceid, plantName);
+        }else if(powerplantid > 0){
+            //List<PowerPlant> powerPlantS = new ArrayList<>();
+            powerPlants = powerPlantRepository.findAllByIdAndPowerPlantNameContaining(powerplantid, plantName);
+        }else{
+            powerPlants = powerPlantRepository.findAllByPowerPlantNameContaining(plantName);
+        }
+
+        //List<PowerPlant> powerPlants = powerPlantRepository.findAllByPowerPlantNameContaining(plantName);
+
+         List<Long> powerPlantIds = powerPlants.stream().map(PowerPlant::getId)
+                                    .collect(Collectors.toList());
+        //List<Long> powerPlantIds = new ArrayList<>();
+       // powerPlantIds.add(plantId);
 
         log.debug("==Request2 to findAllAccessPointsByProvinceId, powerPlantIds: {}", powerPlantIds.toString());
         // 使用IN查询一次性获取所有这些PowerPlant下的AccessPointGroup的ID
