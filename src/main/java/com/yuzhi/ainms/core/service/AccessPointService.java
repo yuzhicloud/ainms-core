@@ -3,7 +3,14 @@ package com.yuzhi.ainms.core.service;
 import com.yuzhi.ainms.core.domain.*;
 import com.yuzhi.ainms.core.repository.*;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +22,8 @@ import com.yuzhi.ainms.core.service.dto.ProvinceAPStatisticsDTO;
 import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 import com.yuzhi.ainms.core.service.dto.NCEAccessPointDTO;
 import com.yuzhi.ainms.core.config.Constants;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -22,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ResourceUtils;
 
 import static java.time.LocalTime.now;
 
@@ -252,10 +262,38 @@ public class AccessPointService {
         return accessPoints;
     }
 
-    /**
-    * 根据省份来获取每个省份的AP数量
-    *
-    */
+    public Path createCsvFileByPowerPlant(
+        String key
+    ) throws IOException {
+        Pageable pageble = Pageable.unpaged();
+        Page<AccessPoint> records = this.findAllAccessPointsByPlantName(key, 0L, 0L, pageble);
+        LocalDateTime now = LocalDateTime.now();
+        String timestamp = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String fileName = "accessPoints_" + timestamp + ".csv";
+
+        Path file = Paths.get(ResourceUtils.getFile("classpath:").getPath(), fileName);
+        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file.toString()), StandardCharsets.UTF_8);
+        out.write('\ufeff');
+        String HEADERS = "ID, AP Name, AP Type, AP State, AP Group Name";
+        CSVFormat csvFormat = CSVFormat.EXCEL.builder()
+            .setHeader(HEADERS)
+            .build();
+
+        try (CSVPrinter printer = new CSVPrinter(out, csvFormat)) {
+            for (AccessPoint record : records.getContent()) {
+               // double rate = record.getTotalCount() > 0 ? (double) record.getOnlineCount() / record.getTotalCount() : 0;
+                String state = (record.getNestate() == 11 || record.getNestate() == 7) ? "在线":"离线";
+              //  String name = new String(record.getName().getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+                printer.printRecord(record.getId(), record.getNename(), record.getNetype(), state, record.getGroup().getName());
+            }
+        }
+        return file;
+    }
+
+        /*
+        * 根据省份来获取每个省份的AP数量
+        *
+        */
     public List<ProvinceAccessPointCountDTO> getAccessPointCountsByProvince() {
         return powerPlantRepository.countAccessPointsByProvince();
     }

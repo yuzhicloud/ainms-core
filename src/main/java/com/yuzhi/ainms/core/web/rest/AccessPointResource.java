@@ -8,8 +8,11 @@ import com.yuzhi.ainms.core.service.dto.ProvinceAPStatisticsDTO;
 import com.yuzhi.ainms.core.web.rest.errors.BadRequestAlertException;
 import com.yuzhi.ainms.core.service.dto.ProvinceAccessPointCountDTO;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.PathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -333,4 +338,21 @@ public class AccessPointResource {
         return ResponseEntity.ok(counts);
     }
 
+    @GetMapping("/download-csv")
+    public ResponseEntity<Resource> downloadCsv(
+        @RequestParam(name = "key") String keyword
+    ) throws IOException {
+       // LocalDate start = LocalDate.parse(startdate);
+       // LocalDate end = LocalDate.parse(enddate);
+
+        Path path = accessPointService.createCsvFileByPowerPlant(keyword);
+        Resource resource = new PathResource(path);
+        String downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/api/access-points/download-csv")
+            .toUriString();
+
+        return ResponseEntity.ok()
+            .header("Content-Disposition", "attachment; filename=\"" + path.getFileName().toString() + "\"")
+            .body(resource);
+    }
 }
