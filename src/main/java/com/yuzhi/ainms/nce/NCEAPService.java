@@ -92,7 +92,7 @@ public class NCEAPService {
             .map(this::convertToAccessPoint)
             .doOnNext(accessPoint -> {
                 // 这里可以记录转换后每个access point的信息，或简单记录条数
-                log.debug("Processed access point: {}", accessPoint.getApSn());
+                // log.debug("Processed access point: {}", accessPoint.getApSn());
             });
     }
 

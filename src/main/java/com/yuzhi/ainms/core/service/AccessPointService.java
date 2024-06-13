@@ -362,8 +362,9 @@ public class AccessPointService {
         log.debug("==Apservice updateAccessPoints, accessPoints: {}", dtos.toString());
         dtos.forEach(dto -> {
             AccessPoint existingAccessPoint = accessPointRepository.findByEsn(dto.getApSn());
-            if (existingAccessPoint != null && dto.getApStatus() != Constants.NCE_AP_STATUS_ACTIVE
-                && existingAccessPoint.getNestate().equals(Constants.NMS_AP_STATUS_ACTIVE)) {
+            /*if (existingAccessPoint != null && dto.getApStatus() != Constants.NCE_AP_STATUS_ACTIVE
+                && existingAccessPoint.getNestate().equals(Constants.NMS_AP_STATUS_ACTIVE)) {*/
+            if (existingAccessPoint != null && dto.getApStatus() == Constants.NCE_AP_STATUS_OFFLINE){
                 log.debug("==Apservice new state: 4-offline, existingAP: {}", existingAccessPoint.toString());
                 existingAccessPoint.setNestate(Constants.NMS_AP_STATUS_OFFLINE);
                 accessPointRepository.save(existingAccessPoint);
