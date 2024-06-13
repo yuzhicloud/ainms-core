@@ -268,15 +268,17 @@ public class AccessPointService {
 
     /**
     * 根据从NCE获取的AP的值，更新数据库中的AP状态
-    *  网管状态为11的AP，如果NCE中的状态不为0，则更新为4-offline
+    * NCE的设备状态定义：'0'---正常、'1'---告警、'3'---离线、'4'---未注册。
+    *  网管状态为11的AP，如果NCE中的状态为‘3’，则更新为4-offline，NCE里面的AP状态0,1,4都认为是在线
     */
     @Transactional
     public void updateAccessPoints(List<NCEAccessPointDTO> dtos) {
         log.debug("==Apservice updateAccessPoints, accessPoints: {}", dtos.toString());
         dtos.forEach(dto -> {
             AccessPoint existingAccessPoint = accessPointRepository.findByEsn(dto.getApSn());
-            if (existingAccessPoint != null && dto.getApStatus() != Constants.NCE_AP_STATUS_ACTIVE
-                && existingAccessPoint.getNestate().equals(Constants.NMS_AP_STATUS_ACTIVE)) {
+            /*if (existingAccessPoint != null && dto.getApStatus() != Constants.NCE_AP_STATUS_ACTIVE
+                && existingAccessPoint.getNestate().equals(Constants.NMS_AP_STATUS_ACTIVE)) {*/
+            if (existingAccessPoint != null && dto.getApStatus() == Constants.NCE_AP_STATUS_OFFLINE){
                 log.debug("==Apservice new state: 4-offline, existingAP: {}", existingAccessPoint.toString());
                 existingAccessPoint.setNestate(Constants.NMS_AP_STATUS_OFFLINE);
                 accessPointRepository.save(existingAccessPoint);

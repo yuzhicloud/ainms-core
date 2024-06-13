@@ -19,6 +19,8 @@ public final class Constants {
     /* NCE AP Status
      * 设备状态，'0'---正常、'1'---告警、'3'---离线、'4'---未注册。iMaster NCE-WAN场景下，AR设备无告警状态。*/
     public static final int NCE_AP_STATUS_ACTIVE = 0;
-    public static final int NCE_AP_STATUS_OFFLINE= 1;
+    public static final int NCE_AP_STATUS_FAULT = 1;
+    public static final int NCE_AP_STATUS_OFFLINE= 3;
+    public static final int NCE_AP_STATUS_UNREGISTER= 4;
     private Constants() {}
 }
